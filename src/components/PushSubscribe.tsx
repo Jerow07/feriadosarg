@@ -68,9 +68,9 @@ export function PushSubscribe() {
       setIsSubscribed(true);
       alert('¡Suscrito con éxito a las notificaciones PWA!');
     } catch (err: any) {
-      console.error('Error suscribiendo al usuario', err);
-      // Apple forces PWAs to be added to home screen first. Provide fallback error
-      alert(`Error de suscripción: ${err.message}. Si estás en iPhone recordá añadir esto a Inicio ("Add to Home Screen"). Comprobá VAPID config.`);
+      console.error('Error suscribiendo al usuario crudo:', err);
+      // Fallback a String duro para ver el root object de DOMException
+      alert("ERROR CRUDO: " + String(err) + " || JSON: " + JSON.stringify(err, Object.getOwnPropertyNames(err)));
     }
   };
 
