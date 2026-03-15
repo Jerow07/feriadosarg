@@ -1,3 +1,6 @@
+/// <reference lib="webworker" />
+declare const self: ServiceWorkerGlobalScope;
+
 self.addEventListener('push', (event) => {
   if (event.data) {
     const data = event.data.json();
@@ -18,7 +21,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       // If the app is already open, focus it
       for (const client of windowClients) {
         if (client.url === '/' && 'focus' in client) {
@@ -26,8 +29,8 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
       // If not, open it
-      if (clients.openWindow) {
-        return clients.openWindow('/');
+      if (self.clients.openWindow) {
+        return self.clients.openWindow('/');
       }
     })
   );
