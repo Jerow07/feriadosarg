@@ -74,19 +74,29 @@ export function PushSubscribe() {
     }
   };
 
+  const handleClick = () => {
+    if (isSubscribed) {
+      alert("Ya estás suscrito a las notificaciones.");
+      return;
+    }
+    if (!supportPush) {
+      alert("Tu dispositivo o navegador no soporta notificaciones aún. Si estás en iPhone, recordá que debés tocar 'Compartir' -> 'Añadir a inicio' primero, y abrir la app desde ahí.");
+      return;
+    }
+    subscribeUser();
+  };
+
   return (
     <button 
-      onClick={isSubscribed ? undefined : subscribeUser}
-      disabled={isSubscribed || !supportPush}
+      onClick={handleClick}
       className={`absolute top-4 left-4 p-3 rounded-full border shadow-sm transition-colors z-50 flex items-center space-x-2 ${
         isSubscribed 
           ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
           : !supportPush
-          ? "bg-gray-100 dark:bg-secondary/30 text-gray-400 dark:text-gray-600 border-gray-200 dark:border-white/5 cursor-not-allowed"
+          ? "bg-gray-100 dark:bg-secondary/30 text-gray-400 dark:text-gray-600 border-gray-200 dark:border-white/5"
           : "bg-white dark:bg-secondary/50 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-secondary/80"
       }`}
       aria-label="Notificaciones"
-      title={!supportPush ? "Las notificaciones PWA requieren HTTPS o ser instalada en Inicio" : "Suscribirse"}
     >
       {isSubscribed ? <span className="text-xs font-semibold px-1">Suscrito</span> : <Bell size={20} />}
       {isSubscribed && <BellOff size={20} className="hidden" />}
