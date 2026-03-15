@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-primary: #171717;     /* near black for dark mode base */
+  --color-secondary: #262626;   /* slightly lighter */
+  --color-accent: #facc15;      /* yellow accent, like a glowing sun */
+}
+
+@layer base {
+  html, body {
+    @apply antialiased bg-gray-50 text-gray-900 dark:bg-primary dark:text-gray-100;
+  }
+}
