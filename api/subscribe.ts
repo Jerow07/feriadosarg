@@ -24,6 +24,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Save the subscription to KV Storage using the endpoint as unique key
     await kv.set(`sub:${subscription.endpoint}`, JSON.stringify(subscription));
 
+    // Send a welcome notification immediately as proof of work
+    const payload = JSON.stringify({
+      title: '¡Suscripción exitosa!',
+      body: 'Recibirás un aviso el día antes de cada feriado.'
+    });
+
+    try {
+      await webpush.sendNotification(subscription, payload);
+    } catch (pushErr) {
+      console.error('Error sending welcome notification', pushErr);
+    }
+
     res.status(200).json({ message: 'Suscripción exitosa' });
   } catch (error) {
     console.error('Error saving subscription', error);
