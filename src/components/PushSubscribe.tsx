@@ -1,6 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 
+// Utility to convert Base64 vapid key to Uint8Array
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 export function PushSubscribe() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [supportPush, setSupportPush] = useState(false);
@@ -28,24 +44,33 @@ export function PushSubscribe() {
           return;
       }
       
+      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
+        throw new Error("No VAPID key found in environment variables");
+      }
+
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
+        applicationServerKey: urlBase64ToUint8Array(vapidKey)
       });
 
       // Send to our /api/subscribe backend
-      await fetch('/api/subscribe', {
+      const backendRes = await fetch('/api/subscribe', {
         method: 'POST',
         body: JSON.stringify(sub),
         headers: { 'Content-Type': 'application/json' }
       });
       
+      if (!backendRes.ok) {
+        throw new Error("Backend devolvió error al suscribir");
+      }
+      
       setIsSubscribed(true);
       alert('¡Suscrito con éxito a las notificaciones PWA!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error suscribiendo al usuario', err);
       // Apple forces PWAs to be added to home screen first. Provide fallback error
-      alert('Error. Si estás en iPhone asegurate primero de añadir esta web a Inicio ("Add to Home Screen").');
+      alert(`Error de suscripción: ${err.message}. Si estás en iPhone recordá añadir esto a Inicio ("Add to Home Screen"). Comprobá VAPID config.`);
     }
   };
 
