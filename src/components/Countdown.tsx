@@ -31,7 +31,7 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
       <div className="relative">
         <button 
           onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-          className="bg-white dark:bg-secondary p-3 rounded-2xl ring-1 ring-gray-600 dark:ring-white/10 shadow-sm dark:shadow-none backdrop-blur-sm self-center flex items-center space-x-2 text-yellow-600 dark:text-white hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors cursor-pointer"
+          className="bg-white dark:bg-secondary p-3 rounded-2xl ring-1 ring-gray-600 dark:ring-white/10 shadow-sm dark:shadow-none backdrop-blur-sm self-center flex items-center space-x-2 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors cursor-pointer"
         >
           <Calendar size={18} />
           <span className="text-sm font-medium tracking-wide uppercase">Próximo Feriado</span>
