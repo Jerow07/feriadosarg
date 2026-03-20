@@ -16,7 +16,7 @@ export function UpcomingHolidays({ holidays }: UpcomingHolidaysProps) {
         {holidays.map((h, i) => (
           <div 
             key={`${h.fecha}-${i}`}
-            className="flex items-center justify-between p-4 bg-white dark:bg-secondary/30 rounded-2xl border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-secondary/50 transition-colors shadow-sm dark:shadow-none"
+            className="flex items-center justify-between p-4 bg-white dark:bg-secondary rounded-2xl border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors shadow-sm dark:shadow-none"
           >
             <div className="flex flex-col text-left">
               <span className="font-semibold text-gray-800 dark:text-gray-200">{h.nombre}</span>

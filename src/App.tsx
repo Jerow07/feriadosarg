@@ -57,7 +57,7 @@ function App() {
 
         {!loading && !error && nextHoliday && (
           <div className="w-full animate-in zoom-in-95 duration-700 ease-out fade-in mt-8 md:mt-0">
-            <Countdown nextHoliday={nextHoliday} />
+            <Countdown nextHoliday={nextHoliday} holidays={holidays} />
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both fade-in w-full text-center md:text-left">
               <UpcomingHolidays holidays={upcomingHolidays.slice(1, 4)} />
               <BankPayday holidays={holidays} />
@@ -66,6 +66,10 @@ function App() {
         )}
 
       </div>
+
+      <footer className="w-full text-center py-8 mt-auto relative z-10 text-sm font-medium text-gray-500 dark:text-gray-400">
+        &copy; Hecho con ☕ y código por Jerónimo Parra
+      </footer>
       
       {/* Background gradients for aesthetics */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">

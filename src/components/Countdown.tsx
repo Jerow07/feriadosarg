@@ -1,11 +1,15 @@
-import type { UpcomingHoliday } from '../types';
+import { useState } from 'react';
+import type { UpcomingHoliday, Holiday } from '../types';
 import { Calendar } from 'lucide-react';
+import { MiniCalendar } from './MiniCalendar';
 
 interface CountdownProps {
   nextHoliday: UpcomingHoliday;
+  holidays: Holiday[];
 }
 
-export function Countdown({ nextHoliday }: CountdownProps) {
+export function Countdown({ nextHoliday, holidays }: CountdownProps) {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const isToday = nextHoliday.daysRemaining === 0;
   const isTomorrow = nextHoliday.daysRemaining === 1;
 
@@ -14,7 +18,7 @@ export function Countdown({ nextHoliday }: CountdownProps) {
   const getDayOfWeek = (date: Date) => {
     return new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(date);
   };
-  
+
   const getFormattedDate = (date: Date) => {
     return new Intl.DateTimeFormat('es-AR', {
       day: 'numeric',
@@ -24,9 +28,18 @@ export function Countdown({ nextHoliday }: CountdownProps) {
 
   return (
     <div className="flex flex-col items-center justify-center text-center p-6 space-y-6">
-      <div className="bg-white dark:bg-secondary/50 p-3 rounded-2xl ring-1 ring-gray-200 dark:ring-white/10 shadow-sm dark:shadow-none backdrop-blur-sm self-center flex items-center space-x-2 text-yellow-600 dark:text-accent">
-        <Calendar size={18} />
-        <span className="text-sm font-medium tracking-wide uppercase">Próximo Feriado</span>
+      <div className="relative">
+        <button 
+          onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+          className="bg-white dark:bg-secondary p-3 rounded-2xl ring-1 ring-gray-600 dark:ring-white/10 shadow-sm dark:shadow-none backdrop-blur-sm self-center flex items-center space-x-2 text-yellow-600 dark:text-white hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors cursor-pointer"
+        >
+          <Calendar size={18} />
+          <span className="text-sm font-medium tracking-wide uppercase">Próximo Feriado</span>
+        </button>
+        
+        {isCalendarOpen && (
+          <MiniCalendar holidays={holidays} onClose={() => setIsCalendarOpen(false)} />
+        )}
       </div>
 
       <div className="space-y-2">
@@ -47,7 +60,7 @@ export function Countdown({ nextHoliday }: CountdownProps) {
         <p className="text-lg text-gray-600 dark:text-gray-300 capitalize">
           {getDayOfWeek(nextHoliday.date)}, {getFormattedDate(nextHoliday.date)}
         </p>
-        <span className="inline-block mt-2 px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-xs font-medium text-gray-500 dark:text-gray-400 capitalize border border-gray-200 dark:border-transparent">
+        <span className="inline-block mt-2 px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-xs font-medium text-gray-500 dark:text-white capitalize border border-gray-200 dark:border-transparent">
           {nextHoliday.tipo}
         </span>
       </div>
