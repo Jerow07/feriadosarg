@@ -22,11 +22,7 @@ export function TodayEvents({ holidays }: TodayEventsProps) {
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         
-        const res = await fetch(`https://es.wikipedia.org/api/rest_v1/feed/onthisday/all/${month}/${day}`, {
-          headers: {
-            'User-Agent': 'FeriadosArgApp/1.0 (https://feriadosarg.vercel.app)'
-          }
-        });
+        const res = await fetch(`https://es.wikipedia.org/api/rest_v1/feed/onthisday/all/${month}/${day}`);
         
         if (!res.ok) throw new Error('API Error');
         const data = await res.json();
