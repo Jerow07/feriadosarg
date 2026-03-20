@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { BookOpenText, Loader2, Flag } from 'lucide-react';
 import type { Holiday } from '../types';
 
