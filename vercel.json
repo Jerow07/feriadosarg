@@ -3,6 +3,10 @@
     {
       "path": "/api/send-push",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/monthly-bridges-push",
+      "schedule": "0 13 1 * *"
     }
   ]
 }

@@ -8,8 +8,8 @@ export function UpcomingHolidays({ holidays }: UpcomingHolidaysProps) {
   if (holidays.length === 0) return null;
 
   return (
-    <div className="w-full max-w-md mx-auto mt-12 space-y-4">
-      <h4 className="text-sm font-semibold tracking-widest text-gray-400 dark:text-gray-500 uppercase px-4">
+    <div className="w-full h-full space-y-4">
+      <h4 className="text-sm font-semibold tracking-widest text-gray-400 dark:text-gray-500 uppercase px-4 text-left">
         Siguientes feriados
       </h4>
       <div className="space-y-3">

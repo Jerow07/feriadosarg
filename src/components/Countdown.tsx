@@ -30,7 +30,7 @@ export function Countdown({ nextHoliday }: CountdownProps) {
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-7xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow">
+        <h2 className="text-7xl md:text-9xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow px-4 pb-4">
           {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
         </h2>
         {!isToday && !isTomorrow && (

@@ -1,9 +1,11 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;900&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
   --color-primary: #171717;     /* near black for dark mode base */
   --color-secondary: #262626;   /* slightly lighter */
   --color-accent: #facc15;      /* yellow accent, like a glowing sun */

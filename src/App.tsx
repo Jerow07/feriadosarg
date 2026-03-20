@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { useHolidays } from './hooks/useHolidays'
 import { Countdown } from './components/Countdown'
 import { UpcomingHolidays } from './components/UpcomingHolidays'
+import { BankPayday } from './components/BankPayday'
 import { PushSubscribe } from './components/PushSubscribe'
 import { Loader2, Sun, Moon } from 'lucide-react'
 
 function App() {
-  const { nextHoliday, upcomingHolidays, loading, error } = useHolidays()
+  const { holidays, nextHoliday, upcomingHolidays, loading, error } = useHolidays()
   
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -39,7 +40,7 @@ function App() {
         {isDark ? <Sun size={20} /> : <Moon size={20} />}
       </button>
 
-      <div className="w-full max-w-2xl mx-auto flex flex-col items-center relative z-10">
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center relative z-10 px-4">
         
         {loading && (
           <div className="flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500 mt-12">
@@ -57,8 +58,9 @@ function App() {
         {!loading && !error && nextHoliday && (
           <div className="w-full animate-in zoom-in-95 duration-700 ease-out fade-in mt-8 md:mt-0">
             <Countdown nextHoliday={nextHoliday} />
-            <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both fade-in">
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both fade-in w-full text-center md:text-left">
               <UpcomingHolidays holidays={upcomingHolidays.slice(1, 4)} />
+              <BankPayday holidays={holidays} />
             </div>
           </div>
         )}
