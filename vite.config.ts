@@ -14,7 +14,7 @@ export default defineConfig({
       filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectManifest: {
-        injectionPoint: undefined
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}']
       },
       manifest: {
         name: 'Feriados Arg',

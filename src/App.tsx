@@ -5,6 +5,10 @@ import { UpcomingHolidays } from './components/UpcomingHolidays'
 import { BankPayday } from './components/BankPayday'
 import { TodayEvents } from './components/TodayEvents'
 import { PushSubscribe } from './components/PushSubscribe'
+import { InstallPWA } from './components/InstallPWA'
+import { OfflineBanner } from './components/OfflineBanner'
+import { ReleaseNotes } from './components/ReleaseNotes'
+import { AnnualStats } from './components/AnnualStats'
 import { Loader2, Sun, Moon } from 'lucide-react'
 
 function App() {
@@ -31,7 +35,10 @@ function App() {
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-primary text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center p-4 selection:bg-accent selection:text-black transition-colors duration-300">
       
+      <ReleaseNotes />
+      <OfflineBanner />
       <PushSubscribe />
+      <InstallPWA />
 
       <button 
         onClick={() => setIsDark(!isDark)}
@@ -59,18 +66,43 @@ function App() {
         {!loading && !error && nextHoliday && (
           <div className="w-full animate-in zoom-in-95 duration-700 ease-out fade-in mt-8 md:mt-0">
             <Countdown nextHoliday={nextHoliday} holidays={holidays} />
+            
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8 animate-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both fade-in w-full text-center md:text-left">
               <TodayEvents holidays={holidays} />
               <UpcomingHolidays holidays={upcomingHolidays.slice(1, 4)} />
               <BankPayday holidays={holidays} />
+            </div>
+
+            <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both fade-in w-full pb-8">
+              <AnnualStats holidays={holidays} />
             </div>
           </div>
         )}
 
       </div>
 
-      <footer className="w-full text-center py-8 mt-auto relative z-10 text-sm font-medium text-gray-500 dark:text-gray-400">
-        &copy; Hecho con ☕ y código por Jerónimo Parra
+      <footer className="w-full flex items-center justify-center gap-4 py-8 mt-auto relative z-10 text-sm font-medium text-gray-500 dark:text-gray-400">
+        <span>&copy; Hecho con ☕ y código por Jerónimo Parra</span>
+        <button
+          onClick={async () => {
+            const shareData = {
+              title: 'FeriadosArg',
+              text: '¡Mirá esta app para saber cuándo es el próximo feriado en Argentina! 🇦🇷',
+              url: window.location.origin
+            };
+            if (navigator.share) {
+              try { await navigator.share(shareData); } catch {}
+            } else {
+              await navigator.clipboard.writeText(window.location.origin);
+              alert('¡Link copiado al portapapeles!');
+            }
+          }}
+          className="p-2 rounded-full bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors border border-gray-200 dark:border-white/10"
+          aria-label="Compartir esta app"
+          title="Compartir FeriadosArg"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
       </footer>
       
       {/* Background gradients for aesthetics */}

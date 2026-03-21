@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { UpcomingHoliday, Holiday } from '../types';
-import { Calendar } from 'lucide-react';
+import { Calendar, Download, Share2, Sun, Cloud, CloudRain, CloudLightning, Snowflake } from 'lucide-react';
 import { MiniCalendar } from './MiniCalendar';
+import { downloadCalendar } from '../utils/icsGenerator';
 
 interface CountdownProps {
   nextHoliday: UpcomingHoliday;
@@ -10,10 +11,72 @@ interface CountdownProps {
 
 export function Countdown({ nextHoliday, holidays }: CountdownProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [weather, setWeather] = useState<{ min: number; max: number; code: number } | null>(null);
+  const [canShare, setCanShare] = useState(false);
+  
   const isToday = nextHoliday.daysRemaining === 0;
   const isTomorrow = nextHoliday.daysRemaining === 1;
 
+  useEffect(() => {
+    setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
 
+    if (nextHoliday.daysRemaining <= 10 && nextHoliday.daysRemaining >= 0) {
+      const yyyy = nextHoliday.date.getFullYear();
+      const mm = String(nextHoliday.date.getMonth() + 1).padStart(2, '0');
+      const dd = String(nextHoliday.date.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      
+      // Defaulting lat/log to Buenos Aires as main reference
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=-34.6118&longitude=-58.4173&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&start_date=${dateStr}&end_date=${dateStr}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.daily && typeof data.daily.weathercode[0] === 'number') {
+            setWeather({
+              code: data.daily.weathercode[0],
+              max: Math.round(data.daily.temperature_2m_max[0]),
+              min: Math.round(data.daily.temperature_2m_min[0])
+            });
+          }
+        })
+        .catch(() => setWeather(null)); // graceful fail
+    } else {
+      setWeather(null);
+    }
+  }, [nextHoliday.date, nextHoliday.daysRemaining]);
+
+  const getWeatherIcon = (code: number) => {
+    if (code === 0 || code === 1) return <Sun className="w-5 h-5 text-yellow-500" />;
+    if (code === 2 || code === 3) return <Cloud className="w-5 h-5 text-gray-400" />;
+    if (code >= 51 && code <= 67) return <CloudRain className="w-5 h-5 text-blue-400" />;
+    if (code >= 71 && code <= 77) return <Snowflake className="w-5 h-5 text-blue-200" />;
+    if (code >= 95) return <CloudLightning className="w-5 h-5 text-purple-500" />;
+    return <Sun className="w-5 h-5 text-yellow-500" />;
+  };
+
+  const getWeatherDescription = (code: number) => {
+    if (code === 0) return 'Se pronostica cielo despejado, ideal para pasear al sol';
+    if (code === 1 || code === 2) return 'El pronóstico indica un día algo nublado pero agradable';
+    if (code === 3) return 'Se espera un clima mayormente nublado para este feriado';
+    if (code >= 45 && code <= 48) return 'Precaución: se esperan bancos de niebla durante la mañana';
+    if (code >= 51 && code <= 55) return 'El pronóstico indica probables lloviznas intermitentes';
+    if (code >= 61 && code <= 67) return 'Se prevén lluvias para este feriado, ¡ideal para peli y manta!';
+    if (code >= 71 && code <= 77) return '¡Increíble! El pronóstico marca probabilidad de nieve';
+    if (code >= 95) return 'Atención: se pronostican fuertes tormentas eléctricas';
+    return 'Buen clima esperado para disfrutar del feriado';
+  };
+
+  const shareHoliday = async () => {
+    if (!navigator.share) return;
+    try {
+      await navigator.share({
+        title: 'FeriadosArg',
+        text: `¡Faltan ${isToday ? '0' : nextHoliday.daysRemaining} días para el próximo feriado: ${nextHoliday.nombre}! 🔥`,
+        url: window.location.origin
+      });
+    } catch (err) {
+      console.log('Error sharing:', err);
+    }
+  };
 
   const getDayOfWeek = (date: Date) => {
     return new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(date);
@@ -28,21 +91,47 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
 
   return (
     <div className="flex flex-col items-center justify-center text-center p-6 space-y-6">
-      <div className="relative">
+      <div className="relative flex items-center justify-center gap-2 sm:gap-3">
         <button 
           onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-          className="bg-white dark:bg-secondary p-3 rounded-2xl ring-1 ring-gray-600 dark:ring-white/10 shadow-sm dark:shadow-none backdrop-blur-sm self-center flex items-center space-x-2 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors cursor-pointer"
+          className="bg-white dark:bg-secondary p-3 rounded-2xl ring-1 ring-gray-600 dark:ring-white/10 shadow-sm dark:shadow-none backdrop-blur-sm flex items-center space-x-2 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors cursor-pointer z-10"
         >
           <Calendar size={18} />
-          <span className="text-sm font-medium tracking-wide uppercase">Próximo Feriado</span>
+          <span className="text-sm font-medium tracking-wide uppercase hidden sm:inline">Calendario</span>
         </button>
+
+        <button 
+          onClick={() => downloadCalendar(holidays, 'feriados_arg.ics')}
+          className="bg-yellow-50 dark:bg-accent/10 p-3 rounded-2xl ring-1 ring-yellow-400/30 shadow-sm backdrop-blur-sm flex items-center space-x-2 text-yellow-700 dark:text-accent hover:bg-yellow-100 dark:hover:bg-accent/20 transition-colors cursor-pointer z-10"
+          title="Exportar todos los feriados a mi calendario"
+        >
+          <Download size={18} />
+          <span className="text-sm font-medium tracking-wide uppercase hidden sm:inline">Exportar</span>
+        </button>
+
+        {canShare && (
+          <button 
+            onClick={shareHoliday}
+            className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-2xl ring-1 ring-blue-400/30 shadow-sm backdrop-blur-sm flex items-center space-x-2 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer z-10"
+            title="Compartir feriado"
+          >
+            <Share2 size={18} />
+          </button>
+        )}
         
         {isCalendarOpen && (
-          <MiniCalendar holidays={holidays} onClose={() => setIsCalendarOpen(false)} />
+          <div className="absolute top-14 left-1/2 -translate-x-1/2 z-50">
+            <MiniCalendar holidays={holidays} onClose={() => setIsCalendarOpen(false)} />
+          </div>
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="flex flex-col items-center space-y-2">
+        {!isToday && (
+          <p className="text-lg md:text-xl font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+            Faltan
+          </p>
+        )}
         <h2 className="text-7xl md:text-9xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow px-4 pb-4">
           {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
         </h2>
@@ -53,16 +142,35 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
         )}
       </div>
 
-      <div className="space-y-1.5 mt-8 max-w-md mx-auto bg-gradient-to-b from-white dark:from-secondary to-transparent p-6 rounded-3xl border border-gray-100 dark:border-white/5 shadow-xl dark:shadow-2xl">
-        <h3 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-yellow-600 dark:from-accent dark:to-yellow-200">
-          {nextHoliday.nombre}
-        </h3>
-        <p className="text-lg text-gray-600 dark:text-gray-300 capitalize">
-          {getDayOfWeek(nextHoliday.date)}, {getFormattedDate(nextHoliday.date)}
-        </p>
-        <span className="inline-block mt-2 px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-xs font-medium text-gray-500 dark:text-white capitalize border border-gray-200 dark:border-transparent">
-          {nextHoliday.tipo}
-        </span>
+      <div className="space-y-4 mt-8 max-w-md mx-auto bg-gradient-to-b from-white dark:from-secondary to-transparent p-6 rounded-3xl border border-gray-100 dark:border-white/5 shadow-xl dark:shadow-2xl">
+        <div className="space-y-1.5">
+          <h3 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-yellow-600 dark:from-accent dark:to-yellow-200">
+            {nextHoliday.nombre}
+          </h3>
+          <p className="text-lg text-gray-600 dark:text-gray-300 capitalize">
+            {getDayOfWeek(nextHoliday.date)}, {getFormattedDate(nextHoliday.date)}
+          </p>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center gap-3 border-t border-gray-100 dark:border-white/5 pt-4">
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/5">
+              {nextHoliday.tipo === 'inamovible' ? 'Inamovible 📌' : nextHoliday.tipo === 'trasladable' ? 'Trasladable 🔄' : nextHoliday.tipo === 'puente' ? 'Puente Turístico 🌉' : nextHoliday.tipo}
+            </span>
+            {weather && (
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full border border-blue-100 dark:border-blue-800/50 text-xs font-medium" title="Pronóstico para el feriado">
+                {getWeatherIcon(weather.code)}
+                <span>{weather.min}° a {weather.max}°</span>
+              </div>
+            )}
+          </div>
+
+          {weather && (
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1 max-w-[280px] text-center italic">
+              "{getWeatherDescription(weather.code)}"
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { endOfMonth, isWeekend, subDays, addDays, isBefore, isSameDay, addMonths, startOfDay, startOfMonth } from 'date-fns';
 import { Landmark, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Holiday } from '../types';
 
 interface BankPaydayProps {
@@ -8,15 +9,13 @@ interface BankPaydayProps {
 }
 
 export function BankPayday({ holidays }: BankPaydayProps) {
-  const [activeTab, setActiveTab] = useState<'bank' | 'normal'>('normal'); // 'normal' = 5th business day, 'bank' = penultimate business day
+  const [activeTab, setActiveTab] = useState<'bank' | 'normal'>('normal'); 
 
-  // Memoized payday logic
   const paydays = useMemo(() => {
     let targetMonthBank = new Date();
     let targetMonthNormal = new Date();
     const today = startOfDay(new Date());
     
-    // Helper para obtener el primer día hábil hacia atrás desde una fecha dada (inclusive)
     const getPreviousBusinessDay = (date: Date) => {
       let candidate = date;
       while (true) {
@@ -39,7 +38,6 @@ export function BankPayday({ holidays }: BankPaydayProps) {
       return candidate;
     };
 
-    // Helper para obtener el primer día hábil hacia adelante desde una fecha (inclusive)
     const getNextBusinessDay = (date: Date) => {
       let candidate = date;
       while (true) {
@@ -62,28 +60,24 @@ export function BankPayday({ holidays }: BankPaydayProps) {
       return candidate;
     };
 
-    // Calcular el anteúltimo día hábil
     const getPenultimateBusinessDay = (dateInMonth: Date) => {
       const lastDay = startOfDay(endOfMonth(dateInMonth));
       const lastBusiness = getPreviousBusinessDay(lastDay);
       return getPreviousBusinessDay(subDays(lastBusiness, 1));
     };
 
-    // Calcular el quinto día hábil
     const getFifthBusinessDay = (dateInMonth: Date) => {
       let current = startOfDay(startOfMonth(dateInMonth));
-      current = getNextBusinessDay(current); // Día hábil 1
+      current = getNextBusinessDay(current); 
       for (let i = 1; i < 5; i++) {
-        current = getNextBusinessDay(addDays(current, 1)); // Buscar siguientes 4 días hábiles
+        current = getNextBusinessDay(addDays(current, 1)); 
       }
       return current;
     };
 
-    // Obtener las fechas para este mes inicial
     let bankDay = getPenultimateBusinessDay(targetMonthBank);
     let normalDay = getFifthBusinessDay(targetMonthNormal);
 
-    // Si ya pasaron, buscar el del próximo mes
     if (isBefore(bankDay, today)) {
       targetMonthBank = addMonths(today, 1);
       bankDay = getPenultimateBusinessDay(targetMonthBank);
@@ -94,10 +88,35 @@ export function BankPayday({ holidays }: BankPaydayProps) {
       normalDay = getFifthBusinessDay(targetMonthNormal);
     }
 
-    return { bankDay, normalDay };
+    // Función para calcular días hábiles entre hoy (sin contar hoy) y una fecha objetivo
+    const getBusinessDaysUntil = (targetDate: Date) => {
+      let count = 0;
+      let iterDate = addDays(today, 1); // empezamos desde mañana
+      while (isBefore(iterDate, targetDate) || isSameDay(iterDate, targetDate)) {
+        if (!isWeekend(iterDate)) {
+          const isHol = holidays.some(h => {
+            const [year, month, day] = h.fecha.split("-");
+            return isSameDay(iterDate, new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
+          });
+          if (!isHol) {
+            count++;
+          }
+        }
+        iterDate = addDays(iterDate, 1);
+      }
+      return count;
+    };
+
+    return { 
+      bankDay, 
+      normalDay, 
+      businessDaysToBank: getBusinessDaysUntil(bankDay),
+      businessDaysToNormal: getBusinessDaysUntil(normalDay)
+    };
   }, [holidays]);
 
   const activePayday = activeTab === 'normal' ? paydays.normalDay : paydays.bankDay;
+  const activeBusinessDays = activeTab === 'normal' ? paydays.businessDaysToNormal : paydays.businessDaysToBank;
   const isToday = isSameDay(activePayday, new Date());
 
   const handleNextTab = () => {
@@ -127,28 +146,41 @@ export function BankPayday({ holidays }: BankPaydayProps) {
         </div>
       </div>
 
-      <div className="relative overflow-hidden flex flex-col items-center justify-center p-6 bg-white dark:bg-secondary rounded-2xl border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors shadow-sm dark:shadow-none h-[calc(100%-2.5rem)] min-h-[180px]">
-        {/* Usamos !key para forzar re-animación al cambiar de tab si se desea, o simplemente mostramos el contenido condicional */}
-        <div key={activeTab} className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-right-4 duration-300">
-          {isToday ? (
-            <span className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-emerald-600 dark:from-green-400 dark:to-emerald-300 animate-pulse-slow">
-              ¡ES HOY!
-            </span>
-          ) : (
-            <>
-              <span className="text-6xl md:text-7xl font-display font-black text-gray-800 dark:text-gray-100 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 px-2 pb-2">
-                {activePayday.getDate()}
+      <div className="relative flex flex-col items-center justify-center p-6 bg-white dark:bg-secondary rounded-2xl border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors shadow-sm dark:shadow-none h-[calc(100%-2.5rem)] min-h-[180px] overflow-hidden">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div 
+            key={activeTab} 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center justify-center w-full"
+          >
+            {isToday ? (
+              <span className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-emerald-600 dark:from-green-400 dark:to-emerald-300 animate-pulse-slow">
+                ¡ES HOY!
               </span>
-              <span className="text-lg font-medium text-gray-500 capitalize mt-[-8px]">
-                {new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(activePayday)}
-              </span>
-              <span className="text-xs font-medium text-gray-400 mt-4 text-center border-t border-gray-100 dark:border-white/5 pt-4 w-full px-4">
-                {new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(activePayday)} 
-                {activeTab === 'normal' ? ' (5º día hábil)' : ' (anteúltimo día hábil)'}
-              </span>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <span className="text-6xl md:text-7xl font-display font-black text-gray-800 dark:text-gray-100 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 px-2 pb-2">
+                  {activePayday.getDate()}
+                </span>
+                <span className="text-lg font-medium text-gray-500 capitalize mt-[-8px]">
+                  {new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(activePayday)}
+                </span>
+                <div className="flex flex-col items-center mt-4 border-t border-gray-100 dark:border-white/5 pt-4 w-full gap-2">
+                  <span className="text-xs font-medium text-gray-400 text-center px-4">
+                    {new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(activePayday)} 
+                    {activeTab === 'normal' ? ' (5º día hábil)' : ' (anteúltimo día hábil)'}
+                  </span>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border border-blue-100 dark:border-blue-800/30">
+                    Faltan {activeBusinessDays} días hábiles para cobrar
+                  </div>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
