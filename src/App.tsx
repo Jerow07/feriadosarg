@@ -43,6 +43,11 @@ function App() {
       <OfflineBanner />
       <PushSubscribe />
       <InstallPWA />
+      <div className="fixed bottom-4 left-4 z-50 pointer-events-none">
+        <span className="px-2 py-0.5 bg-white/80 dark:bg-secondary/80 backdrop-blur-sm text-[10px] font-bold text-gray-400 dark:text-gray-500 rounded-md border border-gray-200 dark:border-white/10 tracking-wider shadow-sm transition-opacity duration-300">
+          V3.1.0
+        </span>
+      </div>
 
       <button 
         onClick={() => setIsDark(!isDark)}
