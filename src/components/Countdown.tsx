@@ -13,9 +13,9 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [weather, setWeather] = useState<{ min: number; max: number; code: number } | null>(null);
   const [canShare, setCanShare] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   
   const isToday = nextHoliday.daysRemaining === 0;
-  const isTomorrow = nextHoliday.daysRemaining === 1;
 
   useEffect(() => {
     setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
@@ -44,6 +44,33 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
     }
   }, [nextHoliday.date, nextHoliday.daysRemaining]);
 
+  // Live countdown timer — works 100% offline
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      // Target is midnight (00:00) of the holiday date
+      const target = new Date(nextHoliday.date);
+      target.setHours(0, 0, 0, 0);
+      
+      const diff = target.getTime() - now.getTime();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [nextHoliday.date]);
+
   const getWeatherIcon = (code: number) => {
     if (code === 0 || code === 1) return <Sun className="w-5 h-5 text-yellow-500" />;
     if (code === 2 || code === 3) return <Cloud className="w-5 h-5 text-gray-400" />;
@@ -70,7 +97,7 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
     try {
       await navigator.share({
         title: 'FeriadosArg',
-        text: `¡Faltan ${isToday ? '0' : nextHoliday.daysRemaining} días para el próximo feriado: ${nextHoliday.nombre}! 🔥`,
+        text: `¡${isToday ? '¡Es hoy' : `Faltan ${nextHoliday.daysRemaining} ${nextHoliday.daysRemaining === 1 ? 'día' : 'días'} para`} el próximo feriado: ${nextHoliday.nombre}! 🔥`,
         url: window.location.origin
       });
     } catch (err) {
@@ -135,10 +162,28 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
         <h2 className="text-7xl md:text-9xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow px-4 pb-4">
           {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
         </h2>
-        {!isToday && !isTomorrow && (
+        {!isToday && (
           <p className="text-xl md:text-2xl font-medium text-gray-500 dark:text-gray-400">
-            días
+            {nextHoliday.daysRemaining === 1 ? 'día' : 'días'}
           </p>
+        )}
+        {!isToday && (
+          <div className="flex items-center gap-2 sm:gap-3 mt-3">
+            {[
+              { value: timeLeft.hours, label: 'hs' },
+              { value: timeLeft.minutes, label: 'min' },
+              { value: timeLeft.seconds, label: 'seg' },
+            ].map((unit) => (
+              <div key={unit.label} className="flex flex-col items-center">
+                <span className="text-2xl sm:text-3xl font-bold tabular-nums text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 rounded-xl px-3 py-1.5 border border-gray-200 dark:border-white/10 min-w-[52px] text-center">
+                  {String(unit.value).padStart(2, '0')}
+                </span>
+                <span className="text-[10px] sm:text-xs font-medium text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
+                  {unit.label}
+                </span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

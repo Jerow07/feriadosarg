@@ -9,6 +9,10 @@ import { InstallPWA } from './components/InstallPWA'
 import { OfflineBanner } from './components/OfflineBanner'
 import { ReleaseNotes } from './components/ReleaseNotes'
 import { AnnualStats } from './components/AnnualStats'
+import { SunTimes } from './components/SunTimes'
+import { MoonPhase } from './components/MoonPhase'
+import { LongWeekend } from './components/LongWeekend'
+import { YearProgress } from './components/YearProgress'
 import { Loader2, Sun, Moon } from 'lucide-react'
 
 function App() {
@@ -71,6 +75,13 @@ function App() {
               <TodayEvents holidays={holidays} />
               <UpcomingHolidays holidays={upcomingHolidays.slice(1, 4)} />
               <BankPayday holidays={holidays} />
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 xl:gap-8 animate-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both fade-in w-full">
+              <SunTimes />
+              <MoonPhase />
+              <LongWeekend upcomingHolidays={upcomingHolidays} />
+              <YearProgress />
             </div>
 
             <div className="mt-8 animate-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both fade-in w-full pb-8">

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, CalendarPlus, Wifi, Smartphone, Check, X } from 'lucide-react';
+import { Cloud, Wallet, BarChart3, Share2, Check, X, Clock, Palmtree, Moon, PieChart } from 'lucide-react';
 
-const CURRENT_VERSION = '2.0.0';
+const CURRENT_VERSION = '3.1.0';
 
 export function ReleaseNotes() {
   const [showNotes, setShowNotes] = useState(false);
@@ -25,26 +25,25 @@ export function ReleaseNotes() {
     localStorage.setItem('feriados_last_version', CURRENT_VERSION);
   };
 
-  const features = [
     {
-      icon: <CalendarPlus className="w-5 h-5 text-blue-500" />,
-      title: 'Exportá a tu Calendario',
-      description: 'Añadí todos los feriados a Google Calendar o Apple Calendar con un solo clic.'
+      icon: <Clock className="w-5 h-5 text-amber-500" />,
+      title: 'Countdown en Vivo',
+      description: 'Ahora la cuenta regresiva incluye horas, minutos y segundos actualizados en tiempo real.'
     },
     {
-      icon: <Wifi className="w-5 h-5 text-green-500" />,
-      title: 'Soporte 100% Offline',
-      description: 'Llevá los feriados a todos lados. La app ahora funciona incluso sin conexión a internet.'
+      icon: <Palmtree className="w-5 h-5 text-green-500" />,
+      title: 'Detector de Findes Largos',
+      description: 'Visualizá los próximos descansos extendidos detectados automáticamente por calendario.'
     },
     {
-      icon: <Smartphone className="w-5 h-5 text-purple-500" />,
-      title: 'Instalación Nativa (PWA)',
-      description: 'Instalá FeriadosArg en tu pantalla de inicio como una app más de tu celular.'
+      icon: <Moon className="w-5 h-5 text-indigo-400" />,
+      title: 'Fase Lunar del Día',
+      description: 'Consultá el estado de la luna y días hasta la próxima luna llena, 100% offline.'
     },
     {
-      icon: <Sparkles className="w-5 h-5 text-yellow-500" />,
-      title: 'Nuevas Animaciones',
-      description: 'Una experiencia visual mucho más fluida, rápida y placentera.'
+      icon: <PieChart className="w-5 h-5 text-red-400" />,
+      title: 'Progreso del Año',
+      description: 'Un nuevo anillo visual para ver cuánto falta para terminar el año actual.'
     }
   ];
 

@@ -53,7 +53,7 @@ export function UpcomingHolidays({ holidays }: UpcomingHolidaysProps) {
               <span className="text-lg font-bold text-yellow-600 dark:text-accent">
                 {h.daysRemaining}
               </span>
-              <span className="text-xs text-gray-500 ml-1">días</span>
+              <span className="text-xs text-gray-500 ml-1">{h.daysRemaining === 1 ? 'día' : 'días'}</span>
             </div>
           </motion.div>
         ))}

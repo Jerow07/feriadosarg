@@ -174,7 +174,7 @@ export function BankPayday({ holidays }: BankPaydayProps) {
                     {activeTab === 'normal' ? ' (5º día hábil)' : ' (anteúltimo día hábil)'}
                   </span>
                   <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border border-blue-100 dark:border-blue-800/30">
-                    Faltan {activeBusinessDays} días hábiles para cobrar
+                    {activeBusinessDays === 1 ? 'Falta' : 'Faltan'} {activeBusinessDays} {activeBusinessDays === 1 ? 'día hábil' : 'días hábiles'} para cobrar
                   </div>
                 </div>
               </>
