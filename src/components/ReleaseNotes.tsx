@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, Wallet, BarChart3, Share2, Check, X, Clock, Palmtree, Moon, PieChart } from 'lucide-react';
+import { Check, X, Clock, Palmtree, Moon, PieChart } from 'lucide-react';
 
 const CURRENT_VERSION = '3.1.0';
 
@@ -25,6 +25,7 @@ export function ReleaseNotes() {
     localStorage.setItem('feriados_last_version', CURRENT_VERSION);
   };
 
+  const features = [
     {
       icon: <Clock className="w-5 h-5 text-amber-500" />,
       title: 'Countdown en Vivo',
