@@ -53,15 +53,24 @@ export function PushSubscribe() {
           return;
       }
       
+      await reg.update(); // Force SW update
+      
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY?.trim().replace(/['"]/g, '');
       if (!vapidKey) {
         throw new Error("No VAPID key found. Revisa las variables de entorno.");
       }
 
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey)
-      });
+      console.log('VAPID Key Debug:', { length: vapidKey.length, start: vapidKey.substring(0, 5) });
+
+      let sub;
+      try {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey)
+        });
+      } catch (subErr: any) {
+        throw new Error(`Error en pushManager.subscribe: ${subErr.message}\nKey: ${vapidKey.substring(0, 5)}...${vapidKey.substring(vapidKey.length - 5)} (Len: ${vapidKey.length})`);
+      }
 
       // Send to our /api/subscribe backend
       const backendRes = await fetch('/api/subscribe', {
