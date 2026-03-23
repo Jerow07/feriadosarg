@@ -68,7 +68,9 @@ export function PushSubscribe() {
       
       if (!backendRes.ok) {
         const data = await backendRes.json();
-        throw new Error(data.message || "Error al registrar suscripción en el servidor");
+        const errorMsg = data.message || "Error al registrar suscripción";
+        const errorDetail = data.detail ? `\nDetalle: ${data.detail}` : "";
+        throw new Error(`${errorMsg}${errorDetail}`);
       }
       
       setIsSubscribed(true);
