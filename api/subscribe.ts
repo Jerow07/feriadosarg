@@ -24,9 +24,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Save the subscription to KV Storage using the endpoint as unique key
     try {
       await kv.set(`sub:${subscription.endpoint}`, JSON.stringify(subscription));
-    } catch (kvError) {
+    } catch (kvError: any) {
       console.error('Error saving to KV:', kvError);
-      return res.status(500).json({ message: 'Error al guardar la suscripción en la base de datos' });
+      return res.status(500).json({ 
+        message: 'Error al guardar la suscripción en la base de datos',
+        detail: kvError.message || String(kvError)
+      });
     }
 
     // Send a welcome notification immediately as proof of work
