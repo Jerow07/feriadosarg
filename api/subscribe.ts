@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { kv } from '@vercel/kv';
+import { redis } from './lib/redis';
 import webpush from 'web-push';
 
 webpush.setVapidDetails(
@@ -13,35 +13,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  // Debug environment keys (masked)
-  const envKeys = Object.keys(process.env);
-  console.log('Available environment variables:', envKeys);
-
-  // Check for KV environment variables
-  if (!process.env.KV_URL && !process.env.KV_REST_API_TOKEN && !process.env.REDIS_URL) {
-    return res.status(500).json({ 
-      message: 'Configuración de base de datos faltante',
-      availableKeys: envKeys.filter(k => k.includes('KV') || k.includes('REDIS') || k.includes('URL')),
-      detail: 'Asegúrate de vincular el Storage KV en el panel de Vercel y que las variables estén en Producción.'
-    });
-  }
-
   try {
     const subscription = req.body;
     
-    // Validate subscription object
     if (!subscription || !subscription.endpoint) {
       return res.status(400).json({ message: 'Suscripción inválida' });
     }
 
-    // Save the subscription to KV Storage using the endpoint as unique key
+    // Save the subscription to Redis using the endpoint as unique key
     try {
-      await kv.set(`sub:${subscription.endpoint}`, JSON.stringify(subscription));
-    } catch (kvError: any) {
-      console.error('Error saving to KV:', kvError);
+      await redis.set(`sub:${subscription.endpoint}`, JSON.stringify(subscription));
+    } catch (redisError: any) {
+      console.error('Error saving to Redis:', redisError);
       return res.status(500).json({ 
         message: 'Error al guardar la suscripción en la base de datos',
-        detail: kvError.message || String(kvError)
+        detail: redisError.message || String(redisError)
       });
     }
 
@@ -55,8 +41,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await webpush.sendNotification(subscription, payload);
     } catch (pushErr: any) {
       console.error('Error sending welcome notification', pushErr);
-      // We don't return error here because the subscription IS saved in KV
-      // and future pushes might work.
     }
 
     res.status(200).json({ message: 'Suscripción exitosa' });

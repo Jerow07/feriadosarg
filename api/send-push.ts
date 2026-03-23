@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { kv } from '@vercel/kv';
+import { redis } from './lib/redis';
 import webpush from 'web-push';
 import { differenceInDays, startOfDay, isBefore, isSameDay } from 'date-fns';
 
@@ -16,7 +16,6 @@ interface Holiday {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CRON request via Vercel or manual trigger via POST
   if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
@@ -29,7 +28,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const apiRes = await fetch(`https://api.argentinadatos.com/v1/feriados/${currentYear}`, { headers });
     let holidays: Holiday[] = await apiRes.json();
     
-    // Check if we need to fetch next year
     const today = startOfDay(new Date());
     const hasFutureHolidays = holidays.some(h => {
       const [year, month, day] = h.fecha.split("-");
@@ -45,7 +43,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Find the next upcoming holiday
     const upcoming = holidays.map(h => {
       const [year, month, day] = h.fecha.split("-");
       const holidayDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -60,64 +57,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ message: 'No upcoming holidays found.' });
     }
 
-    // Only send notification if it is exactly 1 day away (tomorrow), or manually forced
     const isManualTrigger = req.query.force === 'true';
     if (nextHoliday.daysRemaining !== 1 && !isManualTrigger && nextHoliday.daysRemaining !== 0) {
-       return res.status(200).json({ 
-         message: 'No push sent.', 
-         next: nextHoliday.nombre, 
-         daysRemaining: nextHoliday.daysRemaining 
-       });
+       return res.status(200).json({ message: 'No push sent.', next: nextHoliday.nombre, daysRemaining: nextHoliday.daysRemaining });
     }
 
-    // Get all subscriptions from KV
-    let errors = 0;
     let success = 0;
-    let cursor = 0;
+    let errors = 0;
+    const payloadTitle = nextHoliday.daysRemaining === 0 ? "¡Hoy es feriado!" : "¡Mañana es feriado!";
+    const payloadBody = `${nextHoliday.nombre}. A disfrutar el día.`;
 
-    let payloadTitle = nextHoliday.daysRemaining === 0 ? "¡Hoy es feriado!" : "¡Mañana es feriado!";
-    let payloadBody = `${nextHoliday.nombre}. A disfrutar el día.`;
-    
-    if (isManualTrigger) {
-      payloadTitle = `Próximo: ${nextHoliday.nombre}`;
-      payloadBody = `Faltan ${nextHoliday.daysRemaining} días.`;
-    }
-
+    // Scan Redis for subscriptions
+    let cursor = '0';
     do {
-      const scanRes = await kv.scan(cursor, { match: 'sub:*', count: 100 });
-      cursor = scanRes[0] as unknown as number;
-      const keys = scanRes[1];
+      const [newCursor, keys] = await redis.scan(cursor, 'MATCH', 'sub:*', 'COUNT', 100);
+      cursor = newCursor;
 
       if (keys.length > 0) {
-         const subscriptionsToProcess = await kv.mget(...keys);
-         
-         const promises = subscriptionsToProcess.map(async (subInfo: any, idx: number) => {
-            if (!subInfo) return;
-            try {
-              const subObj = typeof subInfo === 'string' ? JSON.parse(subInfo) : subInfo;
-              await webpush.sendNotification(
-                subObj,
-                JSON.stringify({ title: payloadTitle, body: payloadBody })
-              );
-              success++;
-            } catch (err: any) {
-              if (err.statusCode === 404 || err.statusCode === 410) {
-                 // Subscription expired or unsubscribed, remove it
-                 await kv.del(keys[idx]);
-              }
-              errors++;
+        const subscriptionsToProcess = await redis.mget(...keys);
+        const promises = subscriptionsToProcess.map(async (subInfo, idx) => {
+          if (!subInfo) return;
+          try {
+            const subObj = JSON.parse(subInfo);
+            await webpush.sendNotification(subObj, JSON.stringify({ title: payloadTitle, body: payloadBody }));
+            success++;
+          } catch (err: any) {
+            if (err.statusCode === 404 || err.statusCode === 410) {
+              await redis.del(keys[idx]);
             }
-         });
-         await Promise.all(promises);
+            errors++;
+          }
+        });
+        await Promise.all(promises);
       }
-    } while (cursor !== 0);
+    } while (cursor !== '0');
 
-    return res.status(200).json({ 
-      message: 'Push Process finished', 
-      success, 
-      errors, 
-      holidaySent: nextHoliday.nombre 
-    });
+    return res.status(200).json({ message: 'Push Process finished', success, errors, holidaySent: nextHoliday.nombre });
 
   } catch (error: any) {
     console.error('Cron job error:', error);

@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { kv } from '@vercel/kv';
+import { redis } from './lib/redis';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -13,8 +13,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ message: 'Endpoint faltante' });
     }
 
-    // Remove the subscription from KV Storage
-    await kv.del(`sub:${endpoint}`);
+    // Remove the subscription from Redis
+    await redis.del(`sub:${endpoint}`);
 
     res.status(200).json({ message: 'Desuscripción exitosa' });
   } catch (error) {
