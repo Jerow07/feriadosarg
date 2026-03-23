@@ -3,11 +3,11 @@ import { redis } from './lib/redis.js';
 import webpush from 'web-push';
 import { differenceInDays, startOfDay, isBefore, isSameDay } from 'date-fns';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:test@example.com',
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+    const pubKey = (process.env.VAPID_PUBLIC_KEY || '').trim().replace(/['"=]/g, '');
+    const privKey = (process.env.VAPID_PRIVATE_KEY || '').trim().replace(/['"]/g, '');
+    const subject = (process.env.VAPID_SUBJECT || 'mailto:test@example.com').trim().replace(/['"]/g, '');
+
+    webpush.setVapidDetails(subject, pubKey, privKey);
 
 interface Holiday {
   fecha: string;

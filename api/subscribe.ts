@@ -11,11 +11,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Initialize VAPID only when needed and inside try-catch
     try {
-      webpush.setVapidDetails(
-        process.env.VAPID_SUBJECT || 'mailto:test@example.com',
-        process.env.VAPID_PUBLIC_KEY || '',
-        process.env.VAPID_PRIVATE_KEY || ''
-      );
+      const pubKey = (process.env.VAPID_PUBLIC_KEY || '').trim().replace(/['"=]/g, '');
+      const privKey = (process.env.VAPID_PRIVATE_KEY || '').trim().replace(/['"]/g, '');
+      const subject = (process.env.VAPID_SUBJECT || 'mailto:test@example.com').trim().replace(/['"]/g, '');
+
+      webpush.setVapidDetails(subject, pubKey, privKey);
     } catch (vapidErr: any) {
       return res.status(500).json({ 
         message: 'Error en configuración VAPID', 
