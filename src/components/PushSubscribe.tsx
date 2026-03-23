@@ -4,8 +4,10 @@ import { Bell } from 'lucide-react';
 // Utility to convert Base64 vapid key to Uint8Array
 function urlBase64ToUint8Array(base64String: string) {
   try {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding)
+    // Basic cleaning
+    const cleanStr = base64String.trim().replace(/['"]/g, '');
+    const padding = '='.repeat((4 - (cleanStr.length % 4)) % 4);
+    const base64 = (cleanStr + padding)
       .replace(/\-/g, '+')
       .replace(/_/g, '/');
 
@@ -17,7 +19,7 @@ function urlBase64ToUint8Array(base64String: string) {
     }
     return outputArray;
   } catch (e: any) {
-    throw new Error(`Fallo al decodificar VAPID Key: ${e.message}. Key length: ${base64String?.length}`);
+    throw new Error(`Error decodificando VAPID (Len: ${base64String?.length}): ${e.message}`);
   }
 }
 
