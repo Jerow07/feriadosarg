@@ -53,7 +53,7 @@ export function PushSubscribe() {
           return;
       }
       
-      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY?.trim().replace(/['"]/g, '');
       if (!vapidKey) {
         throw new Error("No VAPID key found. Revisa las variables de entorno.");
       }
