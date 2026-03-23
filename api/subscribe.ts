@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { redis } from './lib/redis';
+import { redis } from './lib/redis.js';
 import webpush from 'web-push';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

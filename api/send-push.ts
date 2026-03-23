@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { redis } from './lib/redis';
+import { redis } from './lib/redis.js';
 import webpush from 'web-push';
 import { differenceInDays, startOfDay, isBefore, isSameDay } from 'date-fns';
 
@@ -75,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (keys.length > 0) {
         const subscriptionsToProcess = await redis.mget(...keys);
-        const promises = subscriptionsToProcess.map(async (subInfo, idx) => {
+        const promises = subscriptionsToProcess.map(async (subInfo: string | null, idx: number) => {
           if (!subInfo) return;
           try {
             const subObj = JSON.parse(subInfo);
