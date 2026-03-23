@@ -13,6 +13,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+  // Check for KV environment variables
+  if (!process.env.KV_URL || !process.env.KV_REST_API_TOKEN) {
+    return res.status(500).json({ 
+      message: 'Configuración de base de datos faltante (KV_URL)',
+      detail: 'Asegúrate de vincular el Storage KV en el panel de Vercel.'
+    });
+  }
+
   try {
     const subscription = req.body;
     
