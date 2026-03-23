@@ -57,12 +57,11 @@ export function PushSubscribe() {
       
       await reg.update(); // Force SW update
       
-      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY?.trim().replace(/['"]/g, '');
-      if (!vapidKey) {
-        throw new Error("No VAPID key found. Revisa las variables de entorno.");
-      }
-
-      console.log('VAPID Key Debug:', { length: vapidKey.length, start: vapidKey.substring(0, 5) });
+      // Try env var first, otherwise use the hardcoded new key as fallback
+      const NEW_PUBLIC_KEY = 'BEhZPJKfzOYIqxZYyVu_00lJEeDLKbdmvbiMCWAn7AryF4K_n5feZdPmsIn9rXuQl07HClWw7CniRm7rOM1CgYg';
+      const vapidKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY || NEW_PUBLIC_KEY).trim().replace(/['"]/g, '');
+      
+      console.log('Using VAPID Key:', vapidKey.substring(0, 10) + '...');
 
       let sub;
       try {
