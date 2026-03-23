@@ -22,7 +22,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Save the subscription to KV Storage using the endpoint as unique key
-    await kv.set(`sub:${subscription.endpoint}`, JSON.stringify(subscription));
+    try {
+      await kv.set(`sub:${subscription.endpoint}`, JSON.stringify(subscription));
+    } catch (kvError) {
+      console.error('Error saving to KV:', kvError);
+      return res.status(500).json({ message: 'Error al guardar la suscripción en la base de datos' });
+    }
 
     // Send a welcome notification immediately as proof of work
     const payload = JSON.stringify({
@@ -32,13 +37,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
       await webpush.sendNotification(subscription, payload);
-    } catch (pushErr) {
+    } catch (pushErr: any) {
       console.error('Error sending welcome notification', pushErr);
+      // We don't return error here because the subscription IS saved in KV
+      // and future pushes might work.
     }
 
     res.status(200).json({ message: 'Suscripción exitosa' });
-  } catch (error) {
-    console.error('Error saving subscription', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+  } catch (error: any) {
+    console.error('General error in subscribe handler:', error);
+    res.status(500).json({ message: 'Internal Server Error', detail: error.message });
   }
 }

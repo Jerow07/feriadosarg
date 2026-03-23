@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 // Utility to convert Base64 vapid key to Uint8Array
 function urlBase64ToUint8Array(base64String: string) {
@@ -20,13 +20,16 @@ function urlBase64ToUint8Array(base64String: string) {
 export function PushSubscribe() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [supportPush, setSupportPush] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setSupportPush(true);
       navigator.serviceWorker.ready.then((reg) => {
         reg.pushManager.getSubscription().then((sub) => {
-          if (sub) setIsSubscribed(true);
+          if (sub) {
+            setIsSubscribed(true);
+          }
         });
       });
     }
@@ -34,19 +37,21 @@ export function PushSubscribe() {
 
   const subscribeUser = async () => {
     if (!('serviceWorker' in navigator)) return;
+    setIsLoading(true);
     
     try {
       const reg = await navigator.serviceWorker.ready;
       
       const res = await Notification.requestPermission();
       if (res !== 'granted') {
-          alert("Debes permitir las notificaciones en el teléfono primero.");
+          alert("Debes permitir las notificaciones en el navegador primero.");
+          setIsLoading(false);
           return;
       }
       
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
       if (!vapidKey) {
-        throw new Error("No VAPID key found in environment variables");
+        throw new Error("No VAPID key found. Revisa las variables de entorno.");
       }
 
       const sub = await reg.pushManager.subscribe({
@@ -62,25 +67,61 @@ export function PushSubscribe() {
       });
       
       if (!backendRes.ok) {
-        throw new Error("Backend devolvió error al suscribir");
+        const data = await backendRes.json();
+        throw new Error(data.message || "Error al registrar suscripción en el servidor");
       }
       
       setIsSubscribed(true);
-      alert('¡Suscrito con éxito a las notificaciones PWA!');
+      console.log('Suscrito con éxito');
     } catch (err: any) {
-      console.error('Error suscribiendo al usuario crudo:', err);
-      // Fallback a String duro para ver el root object de DOMException
-      alert("ERROR CRUDO: " + String(err) + " || JSON: " + JSON.stringify(err, Object.getOwnPropertyNames(err)));
+      console.error('Error suscribiendo:', err);
+      alert("Error al suscribirse: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const unsubscribeUser = async () => {
+    if (!('serviceWorker' in navigator)) return;
+    setIsLoading(true);
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+
+      if (sub) {
+        // 1. Tell the backend to delete the record
+        await fetch('/api/unsubscribe', {
+          method: 'POST',
+          body: JSON.stringify({ endpoint: sub.endpoint }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        // 2. Unsubscribe in the browser
+        await sub.unsubscribe();
+        setIsSubscribed(false);
+        console.log('Desuscrito con éxito');
+      }
+    } catch (err: any) {
+      console.error('Error desuscribiendo:', err);
+      alert("Error al desuscribirse: " + err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleClick = () => {
+    if (isLoading) return;
+
     if (isSubscribed) {
-      alert("Ya estás suscrito a las notificaciones.");
+      if (confirm("¿Deseas dejar de recibir notificaciones de feriados?")) {
+        unsubscribeUser();
+      }
       return;
     }
+
     if (!supportPush) {
-      alert("Tu dispositivo o navegador no soporta notificaciones aún. Si estás en iPhone, recordá que debés tocar 'Compartir' -> 'Añadir a inicio' primero, y abrir la app desde ahí.");
+      alert("Tu dispositivo no soporta notificaciones PWA. En iPhone, debes 'Añadir a inicio' primero.");
       return;
     }
     subscribeUser();
@@ -89,7 +130,10 @@ export function PushSubscribe() {
   return (
     <button 
       onClick={handleClick}
-      className={`absolute top-4 left-4 p-3 rounded-full border shadow-sm transition-colors z-50 flex items-center space-x-2 ${
+      disabled={isLoading}
+      className={`absolute top-4 left-4 p-3 rounded-full border shadow-sm transition-all z-50 flex items-center space-x-2 ${
+        isLoading ? "opacity-50 cursor-not-allowed" : ""
+      } ${
         isSubscribed 
           ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
           : !supportPush
@@ -98,8 +142,16 @@ export function PushSubscribe() {
       }`}
       aria-label="Notificaciones"
     >
-      {isSubscribed ? <span className="text-xs font-semibold px-1">Suscrito</span> : <Bell size={20} />}
-      {isSubscribed && <BellOff size={20} className="hidden" />}
+      {isLoading ? (
+        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : isSubscribed ? (
+        <>
+          <span className="text-xs font-semibold px-1">Suscrito</span>
+          <Bell size={20} className="hidden sm:block" />
+        </>
+      ) : (
+        <Bell size={20} />
+      )}
     </button>
   );
 }
