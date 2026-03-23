@@ -55,22 +55,32 @@ export function PushSubscribe() {
           return;
       }
       
-      await reg.update(); // Force SW update
+      // 1. Force SW update
+      await reg.update(); 
       
-      // Try env var first, otherwise use the hardcoded new key as fallback
+      // 2. Clear ANY existing subscription to avoid "pattern mismatch" conflicts
+      const existingSub = await reg.pushManager.getSubscription();
+      if (existingSub) {
+        await existingSub.unsubscribe();
+        console.log('Old subscription cleared');
+      }
+      
+      // 3. VAPID Key Handling (Hardcoded fallback for reliability)
       const NEW_PUBLIC_KEY = 'BEhZPJKfzOYIqxZYyVu_00lJEeDLKbdmvbiMCWAn7AryF4K_n5feZdPmsIn9rXuQl07HClWw7CniRm7rOM1CgYg';
       const vapidKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY || NEW_PUBLIC_KEY).trim().replace(/['"]/g, '');
       
-      console.log('Using VAPID Key:', vapidKey.substring(0, 10) + '...');
+      console.log('Subscribing with key:', vapidKey.substring(0, 10) + '...');
 
       let sub;
       try {
+        // 4. Perform the actual subscription
         sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(vapidKey)
         });
       } catch (subErr: any) {
-        throw new Error(`Error en pushManager.subscribe: ${subErr.message}\nKey: ${vapidKey.substring(0, 5)}...${vapidKey.substring(vapidKey.length - 5)} (Len: ${vapidKey.length})`);
+        const detail = `Key: ${vapidKey.substring(0, 5)}... (Len: ${vapidKey.length})`;
+        throw new Error(`Error en pushManager.subscribe: ${subErr.message}\n${detail}`);
       }
 
       // Send to our /api/subscribe backend
