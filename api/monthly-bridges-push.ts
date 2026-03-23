@@ -1,19 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { kv } from '@vercel/kv';
+import { redis } from './lib/redis.js';
 import webpush from 'web-push';
 import { isSameMonth } from 'date-fns';
-
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:test@example.com',
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
-
-interface Holiday {
-  fecha: string;
-  tipo: string;
-  nombre: string;
-}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET' && req.method !== 'POST') {
@@ -24,6 +12,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const today = new Date();
     const currentYear = today.getFullYear();
     const isManualTrigger = req.query.force === 'true';
+
+    // 1. Initialize VAPID with cleaning
+    const pubKey = (process.env.VAPID_PUBLIC_KEY || '').trim().replace(/['"=]/g, '');
+    const privKey = (process.env.VAPID_PRIVATE_KEY || '').trim().replace(/['"]/g, '');
+    const subject = (process.env.VAPID_SUBJECT || 'mailto:test@example.com').trim().replace(/['"]/g, '');
+    webpush.setVapidDetails(subject, pubKey, privKey);
 
     // Solo corre automáticamente el día 1 del mes
     if (today.getDate() !== 1 && !isManualTrigger) {
@@ -58,38 +52,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? `Este mes tenemos feriado con fines turísticos el ${titlesAndDates}. ¡A planear!`
         : `Este mes tenemos múltiples feriados con fines turísticos los días ${titlesAndDates}. ¡A planear!`;
 
-    // Enviar pushes
-    let errors = 0;
+    // 2. Scan Redis for subscriptions using ioredis
     let success = 0;
-    let cursor = 0;
+    let errors = 0;
+    let cursor = '0';
 
     do {
-      const scanRes = await kv.scan(cursor, { match: 'sub:*', count: 100 });
-      cursor = scanRes[0] as unknown as number;
-      const keys = scanRes[1];
+      const [newCursor, keys] = await redis.scan(cursor, 'MATCH', 'sub:*', 'COUNT', 100);
+      cursor = newCursor;
 
       if (keys.length > 0) {
-         const subscriptionsToProcess = await kv.mget(...keys);
-         
-         const promises = subscriptionsToProcess.map(async (subInfo: any, idx: number) => {
-            if (!subInfo) return;
-            try {
-              const subObj = typeof subInfo === 'string' ? JSON.parse(subInfo) : subInfo;
-              await webpush.sendNotification(
-                subObj,
-                JSON.stringify({ title: payloadTitle, body: payloadBody })
-              );
-              success++;
-            } catch (err: any) {
-              if (err.statusCode === 404 || err.statusCode === 410) {
-                 await kv.del(keys[idx]);
-              }
-              errors++;
+        const subscriptionsToProcess = await redis.mget(...keys);
+        const promises = subscriptionsToProcess.map(async (subInfo: string | null, idx: number) => {
+          if (!subInfo) return;
+          try {
+            const subObj = JSON.parse(subInfo);
+            await webpush.sendNotification(
+              subObj,
+              JSON.stringify({ title: payloadTitle, body: payloadBody })
+            );
+            success++;
+          } catch (err: any) {
+            if (err.statusCode === 404 || err.statusCode === 410) {
+              await redis.del(keys[idx]);
             }
-         });
-         await Promise.all(promises);
+            errors++;
+          }
+        });
+        await Promise.all(promises);
       }
-    } while (cursor !== 0);
+    } while (cursor !== '0');
 
     return res.status(200).json({ 
       message: 'Push Process finished para feriados puente', 
@@ -102,4 +94,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Cron job error:', error);
     return res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
+}
+
+interface Holiday {
+  fecha: string;
+  tipo: string;
+  nombre: string;
 }
