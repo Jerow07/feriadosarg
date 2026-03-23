@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+// Version: 1.1.0 - Push Notifications Fix
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
