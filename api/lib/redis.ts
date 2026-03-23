@@ -1,6 +1,9 @@
-import Redis from 'ioredis';
+import RedisPackage from 'ioredis';
 
-let redisInstance: Redis | null = null;
+// Handle both ESM and CJS imports for ioredis
+const Redis = (RedisPackage as any).default || RedisPackage;
+
+let redisInstance: any = null;
 
 export function getRedis() {
   if (redisInstance) return redisInstance;
@@ -10,9 +13,12 @@ export function getRedis() {
     throw new Error('REDIS_URL or KV_URL is missing in environment variables');
   }
 
+  // Use the Redis constructor from the package
   redisInstance = new Redis(redisUrl, {
     maxRetriesPerRequest: 0,
     connectTimeout: 10000,
+    // Ensure we don't crash on connection errors during init
+    lazyConnect: true 
   });
 
   return redisInstance;

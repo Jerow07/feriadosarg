@@ -2,18 +2,27 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { redis } from './lib/redis';
 import webpush from 'web-push';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:test@example.com',
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
-
+  // Global try-catch to ensure we ALWAYS return JSON and avoid the "Unexpected token A" error
   try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ message: 'Method Not Allowed' });
+    }
+
+    // Initialize VAPID only when needed and inside try-catch
+    try {
+      webpush.setVapidDetails(
+        process.env.VAPID_SUBJECT || 'mailto:test@example.com',
+        process.env.VAPID_PUBLIC_KEY || '',
+        process.env.VAPID_PRIVATE_KEY || ''
+      );
+    } catch (vapidErr: any) {
+      return res.status(500).json({ 
+        message: 'Error en configuración VAPID', 
+        detail: vapidErr.message 
+      });
+    }
+
     const subscription = req.body;
     
     if (!subscription || !subscription.endpoint) {
@@ -26,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (redisError: any) {
       console.error('Error saving to Redis:', redisError);
       return res.status(500).json({ 
-        message: 'Error al guardar la suscripción en la base de datos',
+        message: 'Error al guardar la suscripción en la base de datos (Redis)',
         detail: redisError.message || String(redisError)
       });
     }
@@ -41,11 +50,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await webpush.sendNotification(subscription, payload);
     } catch (pushErr: any) {
       console.error('Error sending welcome notification', pushErr);
+      // Not returning 500 here as sub is already in Redis
     }
 
-    res.status(200).json({ message: 'Suscripción exitosa' });
+    return res.status(200).json({ message: 'Suscripción exitosa' });
   } catch (error: any) {
-    console.error('General error in subscribe handler:', error);
-    res.status(500).json({ message: 'Internal Server Error', detail: error.message });
+    console.error('CRITICAL BACKEND ERROR:', error);
+    return res.status(500).json({ 
+      message: 'Fallo crítico en el servidor', 
+      detail: error.message || 'Error desconocido'
+    });
   }
 }
