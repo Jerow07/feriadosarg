@@ -13,11 +13,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+  // Debug environment keys (masked)
+  const envKeys = Object.keys(process.env);
+  console.log('Available environment variables:', envKeys);
+
   // Check for KV environment variables
-  if (!process.env.KV_URL || !process.env.KV_REST_API_TOKEN) {
+  if (!process.env.KV_URL && !process.env.KV_REST_API_TOKEN && !process.env.REDIS_URL) {
     return res.status(500).json({ 
-      message: 'Configuración de base de datos faltante (KV_URL)',
-      detail: 'Asegúrate de vincular el Storage KV en el panel de Vercel.'
+      message: 'Configuración de base de datos faltante',
+      availableKeys: envKeys.filter(k => k.includes('KV') || k.includes('REDIS') || k.includes('URL')),
+      detail: 'Asegúrate de vincular el Storage KV en el panel de Vercel y que las variables estén en Producción.'
     });
   }
 
