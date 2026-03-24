@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Clock, Palmtree, Moon, PieChart } from 'lucide-react';
+import { Check, X, Clock, Moon, PieChart, BookOpenText } from 'lucide-react';
 
-const CURRENT_VERSION = '3.1.0';
+const CURRENT_VERSION = '3.2.0';
 
 export function ReleaseNotes() {
   const [showNotes, setShowNotes] = useState(false);
@@ -27,14 +27,14 @@ export function ReleaseNotes() {
 
   const features = [
     {
-      icon: <Clock className="w-5 h-5 text-amber-500" />,
-      title: 'Countdown en Vivo',
-      description: 'Ahora la cuenta regresiva incluye horas, minutos y segundos actualizados en tiempo real.'
+      icon: <BookOpenText className="w-5 h-5 text-blue-500" />,
+      title: 'Efemérides Expandibles',
+      description: 'Leé eventos históricos detallados con la nueva función de "leer más" en la sección de hoy.'
     },
     {
-      icon: <Palmtree className="w-5 h-5 text-green-500" />,
-      title: 'Detector de Findes Largos',
-      description: 'Visualizá los próximos descansos extendidos detectados automáticamente por calendario.'
+      icon: <Clock className="w-5 h-5 text-amber-500" />,
+      title: 'Countdown en Vivo',
+      description: 'Cuenta regresiva con horas, minutos y segundos actualizada en tiempo real.'
     },
     {
       icon: <Moon className="w-5 h-5 text-indigo-400" />,
@@ -44,7 +44,7 @@ export function ReleaseNotes() {
     {
       icon: <PieChart className="w-5 h-5 text-red-400" />,
       title: 'Progreso del Año',
-      description: 'Un nuevo anillo visual para ver cuánto falta para terminar el año actual.'
+      description: 'Un anillo visual para ver cuánto falta para terminar el año actual.'
     }
   ];
 
