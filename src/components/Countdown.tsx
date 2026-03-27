@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { UpcomingHoliday, Holiday } from '../types';
-import { Calendar, Download, Share2, Sun, Cloud, CloudRain, CloudLightning, Snowflake } from 'lucide-react';
+import { Calendar, Download, Share2, Sun, Cloud, CloudRain, CloudLightning, Snowflake, Moon } from 'lucide-react';
 import { MiniCalendar } from './MiniCalendar';
 import { downloadCalendar } from '../utils/icsGenerator';
+import { useWeather } from '../hooks/useWeather';
 
 interface CountdownProps {
   nextHoliday: UpcomingHoliday;
@@ -11,9 +12,10 @@ interface CountdownProps {
 
 export function Countdown({ nextHoliday, holidays }: CountdownProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [weather, setWeather] = useState<{ min: number; max: number; code: number } | null>(null);
   const [canShare, setCanShare] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const { weather: currentWeather } = useWeather();
+  const [holidayWeather, setHolidayWeather] = useState<{ min: number; max: number; code: number } | null>(null);
   
   const isToday = nextHoliday.daysRemaining === 0;
 
@@ -26,21 +28,20 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
       const dd = String(nextHoliday.date.getDate()).padStart(2, '0');
       const dateStr = `${yyyy}-${mm}-${dd}`;
       
-      // Defaulting lat/log to Buenos Aires as main reference
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=-34.6118&longitude=-58.4173&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&start_date=${dateStr}&end_date=${dateStr}`)
         .then(res => res.json())
         .then(data => {
           if (data.daily && typeof data.daily.weathercode[0] === 'number') {
-            setWeather({
+            setHolidayWeather({
               code: data.daily.weathercode[0],
               max: Math.round(data.daily.temperature_2m_max[0]),
               min: Math.round(data.daily.temperature_2m_min[0])
             });
           }
         })
-        .catch(() => setWeather(null)); // graceful fail
+        .catch(() => setHolidayWeather(null));
     } else {
-      setWeather(null);
+      setHolidayWeather(null);
     }
   }, [nextHoliday.date, nextHoliday.daysRemaining]);
 
@@ -71,13 +72,24 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
     return () => clearInterval(interval);
   }, [nextHoliday.date]);
 
-  const getWeatherIcon = (code: number) => {
-    if (code === 0 || code === 1) return <Sun className="w-5 h-5 text-yellow-500" />;
+  const getWeatherIcon = (code: number, isDay: boolean = true) => {
+    if (code === 0 || code === 1) {
+      return isDay ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-blue-300" />;
+    }
     if (code === 2 || code === 3) return <Cloud className="w-5 h-5 text-gray-400" />;
     if (code >= 51 && code <= 67) return <CloudRain className="w-5 h-5 text-blue-400" />;
     if (code >= 71 && code <= 77) return <Snowflake className="w-5 h-5 text-blue-200" />;
     if (code >= 95) return <CloudLightning className="w-5 h-5 text-purple-500" />;
     return <Sun className="w-5 h-5 text-yellow-500" />;
+  };
+
+  const getTodayWeatherPhrase = (code: number) => {
+    if (code === 0 || code === 1) return '¡Día espectacular para disfrutar el sol!';
+    if (code === 2 || code === 3) return 'El cielo está algo gris, pero el feriado se acerca.';
+    if (code >= 51 && code <= 67) return 'Día de lluvia... ideal para unas tortas fritas.';
+    if (code >= 71 && code <= 77) return '¡Mucho frío! Abrigarse bien hoy.';
+    if (code >= 95) return '¡Tormenta eléctrica! Mejor quedarse en casa.';
+    return '¡Disfrutá este día mientras esperás el feriado!';
   };
 
   const getWeatherDescription = (code: number) => {
@@ -159,16 +171,51 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
             Faltan
           </p>
         )}
-        <h2 className="text-7xl md:text-9xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow px-4 pb-4">
-          {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
-        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-6 md:gap-12 w-full max-w-5xl mx-auto px-4">
+          {/* Left spacer for perfect centering of the middle column on desktop */}
+          <div className="hidden md:block" />
+
+          {/* Main Number and "días" label - Perfectly Centered */}
+          <div className="flex flex-col items-center space-y-2 md:space-y-4">
+            <h2 className="text-8xl md:text-9xl font-sans font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow leading-[0.8]">
+              {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
+            </h2>
+            {!isToday && (
+              <p className="text-xl md:text-2xl font-medium text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] mt-4">
+                {nextHoliday.daysRemaining === 1 ? 'día' : 'días'}
+              </p>
+            )}
+          </div>
+          
+          {/* Weather Info - To the right on desktop, below on mobile */}
+          <div className="flex justify-center md:justify-start">
+            {currentWeather && !isToday && (
+              <div className="flex items-center gap-4 bg-white/50 dark:bg-secondary/30 backdrop-blur-md p-4 rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm animate-in slide-in-from-bottom-4 md:slide-in-from-left-4 duration-500">
+                <div className="flex flex-col items-center">
+                  {getWeatherIcon(currentWeather.conditionCode, currentWeather.isDay)}
+                  <span className="text-xl md:text-2xl font-black text-gray-800 dark:text-white">
+                    {currentWeather.temp}°
+                  </span>
+                </div>
+                
+                <div className="w-[1px] h-10 bg-gray-200 dark:bg-white/10" />
+                
+                <div className="flex flex-col items-start min-w-[120px] max-w-[160px]">
+                  <p className="text-[11px] font-bold text-gray-600 dark:text-gray-300 italic leading-tight">
+                    "{getTodayWeatherPhrase(currentWeather.conditionCode)}"
+                  </p>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mt-2">
+                    Hoy en tu ciudad
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
         {!isToday && (
-          <p className="text-xl md:text-2xl font-medium text-gray-500 dark:text-gray-400">
-            {nextHoliday.daysRemaining === 1 ? 'día' : 'días'}
-          </p>
-        )}
-        {!isToday && (
-          <div className="flex items-center gap-2 sm:gap-3 mt-3">
+          <div className="flex items-center gap-2 sm:gap-3 mt-6">
             {[
               { value: timeLeft.hours, label: 'hs' },
               { value: timeLeft.minutes, label: 'min' },
@@ -202,17 +249,17 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
             <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/5">
               {nextHoliday.tipo === 'inamovible' ? 'Inamovible 📌' : nextHoliday.tipo === 'trasladable' ? 'Trasladable 🔄' : nextHoliday.tipo === 'puente' ? 'Puente Turístico 🌉' : nextHoliday.tipo}
             </span>
-            {weather && (
+            {holidayWeather && (
               <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full border border-blue-100 dark:border-blue-800/50 text-xs font-medium" title="Pronóstico para el feriado">
-                {getWeatherIcon(weather.code)}
-                <span>{weather.min}° a {weather.max}°</span>
+                {getWeatherIcon(holidayWeather.code)}
+                <span>{holidayWeather.min}° a {holidayWeather.max}°</span>
               </div>
             )}
           </div>
-
-          {weather && (
+ 
+          {holidayWeather && (
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1 max-w-[280px] text-center italic">
-              "{getWeatherDescription(weather.code)}"
+              "{getWeatherDescription(holidayWeather.code)}"
             </p>
           )}
         </div>

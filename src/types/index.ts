@@ -8,3 +8,10 @@ export interface UpcomingHoliday extends Holiday {
   date: Date;
   daysRemaining: number;
 }
+
+export interface WeatherData {
+  temp: number;
+  conditionCode: number;
+  time: string;
+  isDay: boolean;
+}

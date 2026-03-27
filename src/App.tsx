@@ -49,13 +49,15 @@ function App() {
         </span>
       </div>
 
-      <button 
-        onClick={() => setIsDark(!isDark)}
-        className="absolute top-4 right-4 p-3 rounded-full bg-white dark:bg-secondary/50 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-secondary/80 transition-colors z-50 shadow-sm"
-        aria-label="Toggle dark mode"
-      >
-        {isDark ? <Sun size={20} /> : <Moon size={20} />}
-      </button>
+      <div className="absolute top-4 right-4 flex items-center gap-3 z-50">
+        <button 
+          onClick={() => setIsDark(!isDark)}
+          className="p-3 rounded-full bg-white dark:bg-secondary/50 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-secondary/80 transition-colors shadow-sm"
+          aria-label="Toggle dark mode"
+        >
+          {isDark ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      </div>
 
       <div className="w-full max-w-6xl mx-auto flex flex-col items-center relative z-10 px-4">
         
