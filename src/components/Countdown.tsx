@@ -172,12 +172,12 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
           </p>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-6 md:gap-12 w-full max-w-5xl mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-6 md:gap-16 w-full max-w-5xl mx-auto px-4">
           {/* Left spacer for perfect centering of the middle column on desktop */}
           <div className="hidden md:block" />
 
           {/* Main Number, "días" label, and Time Remaining - Perfectly Centered */}
-          <div className="flex flex-col items-center space-y-2 md:space-y-4">
+          <div className="flex flex-col items-center space-y-2 md:space-y-4 px-10 md:px-14">
             <div className="flex flex-col items-center space-y-2 md:space-y-4">
               <h2 className="text-8xl md:text-9xl font-sans font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow leading-[0.8]">
                 {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
