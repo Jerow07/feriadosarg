@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, Clock, Moon, PieChart, BookOpenText } from 'lucide-react';
 
-const CURRENT_VERSION = '3.2.0';
+const CURRENT_VERSION = '3.3.0';
 
 export function ReleaseNotes() {
   const [showNotes, setShowNotes] = useState(false);
@@ -27,19 +27,19 @@ export function ReleaseNotes() {
 
   const features = [
     {
-      icon: <BookOpenText className="w-5 h-5 text-blue-500" />,
-      title: 'Efemérides Expandibles',
-      description: 'Leé eventos históricos detallados con la nueva función de "leer más" en la sección de hoy.'
+      icon: <Sun className="w-5 h-5 text-yellow-500" />,
+      title: 'Clima en Tiempo Real',
+      description: 'Estado del tiempo y frases personalizadas directamente en tu cuenta regresiva.'
     },
     {
       icon: <Clock className="w-5 h-5 text-amber-500" />,
-      title: 'Countdown en Vivo',
-      description: 'Cuenta regresiva con horas, minutos y segundos actualizada en tiempo real.'
+      title: 'Countdown Centrado',
+      description: 'Nuevo diseño con el contador de días perfectamente centrado y balanceado.'
     },
     {
       icon: <Moon className="w-5 h-5 text-indigo-400" />,
       title: 'Fase Lunar del Día',
-      description: 'Consultá el estado de la luna y días hasta la próxima luna llena, 100% offline.'
+      description: 'Consultá el estado de la luna y días hasta la próxima luna llena.'
     },
     {
       icon: <PieChart className="w-5 h-5 text-red-400" />,
