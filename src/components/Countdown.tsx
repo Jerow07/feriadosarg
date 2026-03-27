@@ -179,7 +179,7 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
           {/* Main Number, "días" label, and Time Remaining - Perfectly Centered */}
           <div className="flex flex-col items-center space-y-2 md:space-y-4 px-10 md:px-14">
             <div className="flex flex-col items-center space-y-2 md:space-y-4">
-              <h2 className="text-8xl md:text-9xl font-sans font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow leading-[0.8]">
+              <h2 className="text-8xl md:text-9xl font-sans font-black tracking-normal text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow leading-none py-2 px-6">
                 {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
               </h2>
               {!isToday && (
