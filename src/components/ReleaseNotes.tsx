@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Clock, Moon, PieChart, BookOpenText } from 'lucide-react';
+import { Check, X, Clock, Moon, PieChart, Sun } from 'lucide-react';
 
 const CURRENT_VERSION = '3.3.0';
 
