@@ -176,15 +176,36 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
           {/* Left spacer for perfect centering of the middle column on desktop */}
           <div className="hidden md:block" />
 
-          {/* Main Number and "días" label - Perfectly Centered */}
+          {/* Main Number, "días" label, and Time Remaining - Perfectly Centered */}
           <div className="flex flex-col items-center space-y-2 md:space-y-4">
-            <h2 className="text-8xl md:text-9xl font-sans font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow leading-[0.8]">
-              {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
-            </h2>
+            <div className="flex flex-col items-center space-y-2 md:space-y-4">
+              <h2 className="text-8xl md:text-9xl font-sans font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 animate-pulse-slow leading-[0.8]">
+                {isToday ? '¡Hoy!' : nextHoliday.daysRemaining}
+              </h2>
+              {!isToday && (
+                <p className="text-xl md:text-2xl font-medium text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] mt-2">
+                  {nextHoliday.daysRemaining === 1 ? 'día' : 'días'}
+                </p>
+              )}
+            </div>
+
             {!isToday && (
-              <p className="text-xl md:text-2xl font-medium text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] mt-4">
-                {nextHoliday.daysRemaining === 1 ? 'día' : 'días'}
-              </p>
+              <div className="flex items-center gap-2 sm:gap-3 mt-4 md:mt-6">
+                {[
+                  { value: timeLeft.hours, label: 'hs' },
+                  { value: timeLeft.minutes, label: 'min' },
+                  { value: timeLeft.seconds, label: 'seg' },
+                ].map((unit) => (
+                  <div key={unit.label} className="flex flex-col items-center">
+                    <span className="text-xl sm:text-2xl font-bold tabular-nums text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 rounded-xl px-2.5 py-1 border border-gray-200 dark:border-white/10 min-w-[48px] text-center">
+                      {String(unit.value).padStart(2, '0')}
+                    </span>
+                    <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
+                      {unit.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
           
@@ -213,25 +234,6 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
             )}
           </div>
         </div>
-        
-        {!isToday && (
-          <div className="flex items-center gap-2 sm:gap-3 mt-6">
-            {[
-              { value: timeLeft.hours, label: 'hs' },
-              { value: timeLeft.minutes, label: 'min' },
-              { value: timeLeft.seconds, label: 'seg' },
-            ].map((unit) => (
-              <div key={unit.label} className="flex flex-col items-center">
-                <span className="text-2xl sm:text-3xl font-bold tabular-nums text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 rounded-xl px-3 py-1.5 border border-gray-200 dark:border-white/10 min-w-[52px] text-center">
-                  {String(unit.value).padStart(2, '0')}
-                </span>
-                <span className="text-[10px] sm:text-xs font-medium text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
-                  {unit.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="space-y-4 mt-8 max-w-md mx-auto bg-gradient-to-b from-white dark:from-secondary to-transparent p-6 rounded-3xl border border-gray-100 dark:border-white/5 shadow-xl dark:shadow-2xl">
