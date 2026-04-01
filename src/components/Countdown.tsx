@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { UpcomingHoliday, Holiday } from '../types';
-import { Calendar, Download, Share2, Sun, Cloud, CloudRain, CloudLightning, Snowflake, Moon } from 'lucide-react';
+import { Calendar, Download, Share2 } from 'lucide-react';
 import { MiniCalendar } from './MiniCalendar';
 import { downloadCalendar } from '../utils/icsGenerator';
 import { useWeather } from '../hooks/useWeather';
+import { getWeatherIcon, getTodayWeatherPhrase, getWeatherDescription } from '../utils/weatherUtils';
 
 interface CountdownProps {
   nextHoliday: UpcomingHoliday;
@@ -72,37 +73,6 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
     return () => clearInterval(interval);
   }, [nextHoliday.date]);
 
-  const getWeatherIcon = (code: number, isDay: boolean = true) => {
-    if (code === 0 || code === 1) {
-      return isDay ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-blue-300" />;
-    }
-    if (code === 2 || code === 3) return <Cloud className="w-5 h-5 text-gray-400" />;
-    if (code >= 51 && code <= 67) return <CloudRain className="w-5 h-5 text-blue-400" />;
-    if (code >= 71 && code <= 77) return <Snowflake className="w-5 h-5 text-blue-200" />;
-    if (code >= 95) return <CloudLightning className="w-5 h-5 text-purple-500" />;
-    return <Sun className="w-5 h-5 text-yellow-500" />;
-  };
-
-  const getTodayWeatherPhrase = (code: number) => {
-    if (code === 0 || code === 1) return '¡Día espectacular para disfrutar el sol!';
-    if (code === 2 || code === 3) return 'El cielo está algo gris, pero el feriado se acerca.';
-    if (code >= 51 && code <= 67) return 'Día de lluvia... ideal para unas tortas fritas.';
-    if (code >= 71 && code <= 77) return '¡Mucho frío! Abrigarse bien hoy.';
-    if (code >= 95) return '¡Tormenta eléctrica! Mejor quedarse en casa.';
-    return '¡Disfrutá este día mientras esperás el feriado!';
-  };
-
-  const getWeatherDescription = (code: number) => {
-    if (code === 0) return 'Se pronostica cielo despejado, ideal para pasear al sol';
-    if (code === 1 || code === 2) return 'El pronóstico indica un día algo nublado pero agradable';
-    if (code === 3) return 'Se espera un clima mayormente nublado para este feriado';
-    if (code >= 45 && code <= 48) return 'Precaución: se esperan bancos de niebla durante la mañana';
-    if (code >= 51 && code <= 55) return 'El pronóstico indica probables lloviznas intermitentes';
-    if (code >= 61 && code <= 67) return 'Se prevén lluvias para este feriado, ¡ideal para peli y manta!';
-    if (code >= 71 && code <= 77) return '¡Increíble! El pronóstico marca probabilidad de nieve';
-    if (code >= 95) return 'Atención: se pronostican fuertes tormentas eléctricas';
-    return 'Buen clima esperado para disfrutar del feriado';
-  };
 
   const shareHoliday = async () => {
     if (!navigator.share) return;
