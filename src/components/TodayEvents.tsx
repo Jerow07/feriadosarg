@@ -135,7 +135,7 @@ export function TodayEvents({ holidays }: TodayEventsProps) {
                           className="overflow-hidden relative"
                         >
                           <span className={`text-gray-600 dark:text-gray-300 ${isLongText && !isExpanded ? 'line-clamp-2' : ''}`}>
-                            {ev.text}
+                            {ev.text.replace(/\.([A-ZÁÉÍÓÚ])/g, '. $1')}
                           </span>
                           {isLongText && !isExpanded && (
                             <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white dark:from-secondary to-transparent pointer-events-none" />
