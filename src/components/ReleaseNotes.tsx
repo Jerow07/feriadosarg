@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Clock, Moon, PieChart, Sun } from 'lucide-react';
+import { Check, X, Clock, Moon, PieChart, Sun, Briefcase } from 'lucide-react';
 
-const CURRENT_VERSION = '3.3.0';
+const CURRENT_VERSION = '3.3.1';
 
 export function ReleaseNotes() {
   const [showNotes, setShowNotes] = useState(false);
@@ -26,6 +26,11 @@ export function ReleaseNotes() {
   };
 
   const features = [
+    {
+      icon: <Briefcase className="w-5 h-5 text-blue-500" />,
+      title: 'Día de Cobro Personalizable',
+      description: 'Ahora podés elegir qué día hábil del mes cobrás (del 1º al 5º o el último).'
+    },
     {
       icon: <Sun className="w-5 h-5 text-yellow-500" />,
       title: 'Clima en Tiempo Real',
