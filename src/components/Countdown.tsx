@@ -179,30 +179,6 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
             )}
           </div>
           
-          {/* Weather Info - To the right on desktop, below on mobile */}
-          <div className="flex justify-center md:justify-start">
-            {currentWeather && !isToday && (
-              <div className="flex items-center gap-4 bg-white/50 dark:bg-secondary/30 backdrop-blur-md p-4 rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm animate-in slide-in-from-bottom-4 md:slide-in-from-left-4 duration-500">
-                <div className="flex flex-col items-center">
-                  {getWeatherIcon(currentWeather.conditionCode, currentWeather.isDay)}
-                  <span className="text-xl md:text-2xl font-black text-gray-800 dark:text-white">
-                    {currentWeather.temp}°
-                  </span>
-                </div>
-                
-                <div className="w-[1px] h-10 bg-gray-200 dark:bg-white/10" />
-                
-                <div className="flex flex-col items-start min-w-[120px] max-w-[160px]">
-                  <p className="text-[11px] font-bold text-gray-600 dark:text-gray-300 italic leading-tight">
-                    "{getTodayWeatherPhrase(currentWeather.conditionCode)}"
-                  </p>
-                  <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mt-2">
-                    Hoy en tu ciudad
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
@@ -235,6 +211,31 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Weather Info - To the right on desktop (using absolute), and at the bottom on mobile */}
+      <div className="md:absolute md:top-[180px] md:right-[5%] lg:right-[10%] xl:right-[15%] order-2 md:order-none mt-8 md:mt-0">
+        {currentWeather && !isToday && (
+          <div className="flex items-center gap-4 bg-white/50 dark:bg-secondary/30 backdrop-blur-md p-4 rounded-[32px] border border-gray-200 dark:border-white/5 shadow-sm animate-in slide-in-from-bottom-4 md:slide-in-from-right-4 duration-500 mx-auto w-fit">
+            <div className="flex flex-col items-center">
+              {getWeatherIcon(currentWeather.conditionCode, currentWeather.isDay)}
+              <span className="text-xl md:text-2xl font-black text-gray-800 dark:text-white">
+                {currentWeather.temp}°
+              </span>
+            </div>
+            
+            <div className="w-[1px] h-10 bg-gray-200 dark:bg-white/10" />
+            
+            <div className="flex flex-col items-start min-w-[120px] max-w-[160px]">
+              <p className="text-[11px] font-bold text-gray-600 dark:text-gray-300 italic leading-tight">
+                "{getTodayWeatherPhrase(currentWeather.conditionCode)}"
+              </p>
+              <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mt-2">
+                Hoy en tu ciudad
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
