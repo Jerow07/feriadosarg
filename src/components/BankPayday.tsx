@@ -149,42 +149,47 @@ export function BankPayday({ holidays }: BankPaydayProps) {
             transition={{ duration: 0.3 }}
             className="flex flex-col items-center justify-center w-full"
           >
-            {isToday ? (
-              <span className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-emerald-600 dark:from-green-400 dark:to-emerald-300 animate-pulse-slow">
-                ¡ES HOY!
-              </span>
-            ) : (
-              <>
-                <span className="text-6xl md:text-7xl font-display font-black text-gray-800 dark:text-gray-100 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 px-2 pb-2">
-                  {paydays.payday.getDate()}
+            <div className="flex flex-col items-center justify-center min-h-[100px]">
+              {isToday ? (
+                <span className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-emerald-600 dark:from-green-400 dark:to-emerald-300 animate-pulse-slow">
+                  ¡ES HOY!
                 </span>
-                <span className="text-lg font-medium text-gray-500 capitalize mt-[-8px]">
-                  {new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(paydays.payday)}
-                </span>
-                <div className="flex flex-col items-center mt-4 border-t border-gray-100 dark:border-white/5 pt-4 w-full gap-2 z-10 relative">
-                  <span className="text-xs font-medium text-gray-400 text-center px-4 flex items-center justify-center gap-1 flex-wrap">
-                    {new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(paydays.payday)} 
-                    <select
-                        value={paydayType}
-                        onChange={(e) => setPaydayType(e.target.value as PaydayType)}
-                        className="bg-transparent border-b border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-400 focus:outline-none text-gray-500 dark:text-gray-400 cursor-pointer text-xs p-0 appearance-none text-center transition-colors pb-0.5 pointer-events-auto"
-                        style={{ textAlignLast: 'center' }}
-                    >
-                        <option value="first">(1º día hábil)</option>
-                        <option value="second">(2º día hábil)</option>
-                        <option value="third">(3º día hábil)</option>
-                        <option value="fourth">(4º día hábil)</option>
-                        <option value="fifth">(5º día hábil)</option>
-                        <option value="last">(último día hábil)</option>
-                        <option value="bank">(cobro bancario - anteúltimo día)</option>
-                    </select>
+              ) : (
+                <>
+                  <span className="text-6xl md:text-7xl font-display font-black text-gray-800 dark:text-gray-100 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 px-2 pb-2">
+                    {paydays.payday.getDate()}
                   </span>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border border-blue-100 dark:border-blue-800/30">
-                    {paydays.businessDaysTo === 1 ? 'Falta' : 'Faltan'} {paydays.businessDaysTo} {paydays.businessDaysTo === 1 ? 'día hábil' : 'días hábiles'} para cobrar
-                  </div>
+                  <span className="text-lg font-medium text-gray-500 capitalize mt-[-8px]">
+                    {new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(paydays.payday)}
+                  </span>
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-col items-center mt-4 border-t border-gray-100 dark:border-white/5 pt-4 w-full gap-2 z-10 relative">
+              <span className="text-xs font-medium text-gray-400 text-center px-4 flex items-center justify-center gap-1 flex-wrap">
+                {new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(paydays.payday)} 
+                <select
+                    value={paydayType}
+                    onChange={(e) => setPaydayType(e.target.value as PaydayType)}
+                    className="bg-transparent border-b border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-400 focus:outline-none text-gray-500 dark:text-gray-400 cursor-pointer text-xs p-0 appearance-none text-center transition-colors pb-0.5 pointer-events-auto"
+                    style={{ textAlignLast: 'center' }}
+                >
+                    <option value="first">(1º día hábil)</option>
+                    <option value="second">(2º día hábil)</option>
+                    <option value="third">(3º día hábil)</option>
+                    <option value="fourth">(4º día hábil)</option>
+                    <option value="fifth">(5º día hábil)</option>
+                    <option value="last">(último día hábil)</option>
+                    <option value="bank">(cobro bancario - anteúltimo día)</option>
+                </select>
+              </span>
+              {!isToday && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border border-blue-100 dark:border-blue-800/30">
+                  {paydays.businessDaysTo === 1 ? 'Falta' : 'Faltan'} {paydays.businessDaysTo} {paydays.businessDaysTo === 1 ? 'día hábil' : 'días hábiles'} para cobrar
                 </div>
-              </>
-            )}
+              )}
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
