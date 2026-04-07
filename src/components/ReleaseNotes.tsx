@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Clock, Moon, PieChart, Sun, Briefcase } from 'lucide-react';
+import { Check, X, Star, Moon, PieChart, Sun, Briefcase } from 'lucide-react';
 
-const CURRENT_VERSION = '3.3.1';
+const CURRENT_VERSION = '3.4.0';
 
 export function ReleaseNotes() {
   const [showNotes, setShowNotes] = useState(false);
@@ -27,19 +27,19 @@ export function ReleaseNotes() {
 
   const features = [
     {
+      icon: <Star className="w-5 h-5 text-yellow-500" />,
+      title: 'Notificaciones Pro 💰',
+      description: 'Recibí un aviso personalizado el día antes de cobrar según tu propia fecha.'
+    },
+    {
       icon: <Briefcase className="w-5 h-5 text-blue-500" />,
-      title: 'Día de Cobro Personalizable',
-      description: 'Ahora podés elegir qué día hábil del mes cobrás (del 1º al 5º o el último).'
+      title: 'Bienvenida Personalizada',
+      description: 'Nueva pantalla para configurar tus preferencias de cobro al entrar por primera vez.'
     },
     {
-      icon: <Sun className="w-5 h-5 text-yellow-500" />,
-      title: 'Clima en Tiempo Real',
-      description: 'Estado del tiempo y frases personalizadas directamente en tu cuenta regresiva.'
-    },
-    {
-      icon: <Clock className="w-5 h-5 text-amber-500" />,
-      title: 'Countdown Centrado',
-      description: 'Nuevo diseño con el contador de días perfectamente centrado y balanceado.'
+      icon: <Sun className="w-5 h-5 text-orange-500" />,
+      title: 'Historia Dinámica',
+      description: 'Las efemérides históricas ahora se desplazan solas con un diseño fluido.'
     },
     {
       icon: <Moon className="w-5 h-5 text-indigo-400" />,

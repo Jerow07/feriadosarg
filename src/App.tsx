@@ -13,10 +13,12 @@ import { SunTimes } from './components/SunTimes'
 import { MoonPhase } from './components/MoonPhase'
 import { LongWeekend } from './components/LongWeekend'
 import { YearProgress } from './components/YearProgress'
+import { PaydaySelectorModal } from './components/PaydaySelectorModal'
 import { Loader2, Sun, Moon } from 'lucide-react'
 
 function App() {
   const { holidays, nextHoliday, upcomingHolidays, loading, error } = useHolidays()
+  const [showPaydayModal, setShowPaydayModal] = useState(false)
   
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -36,6 +38,21 @@ function App() {
     }
   }, [isDark])
 
+  useEffect(() => {
+    // Show modal if it's the first time (no payday preference saved)
+    const savedPayday = localStorage.getItem('feriadosarg_normalPaydayType')
+    if (!savedPayday) {
+      setTimeout(() => setShowPaydayModal(true), 1500) // Small delay for effect
+    }
+  }, [])
+
+  const handlePaydaySelect = (type: string) => {
+    localStorage.setItem('feriadosarg_normalPaydayType', type)
+    setShowPaydayModal(false)
+    // Reload or trigger a state refresh in components if needed
+    window.location.reload() // Simplest way to ensure all components see the new preference
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-primary text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center p-4 selection:bg-accent selection:text-black transition-colors duration-300">
       
@@ -43,9 +60,15 @@ function App() {
       <OfflineBanner />
       <PushSubscribe />
       <InstallPWA />
+      
+      <PaydaySelectorModal 
+        isOpen={showPaydayModal} 
+        onSelect={handlePaydaySelect} 
+      />
+
       <div className="fixed bottom-4 left-4 z-50 pointer-events-none">
         <span className="px-2 py-0.5 bg-white/80 dark:bg-secondary/80 backdrop-blur-sm text-[10px] font-bold text-gray-400 dark:text-gray-500 rounded-md border border-gray-200 dark:border-white/10 tracking-wider shadow-sm transition-opacity duration-300">
-          V3.3.1
+          V3.4.0
         </span>
       </div>
 

@@ -83,22 +83,25 @@ export function PushSubscribe() {
         throw new Error(`Error en pushManager.subscribe: ${subErr.message}\n${detail}`);
       }
 
-      // Send to our /api/subscribe backend
+      // Get current payday preference
+      const paydayType = localStorage.getItem('feriadosarg_normalPaydayType') || 'fifth';
+
+      // Send to backend with preferences
       const backendRes = await fetch('/api/subscribe', {
         method: 'POST',
-        body: JSON.stringify(sub),
+        body: JSON.stringify({
+          subscription: sub,
+          preferences: { paydayType }
+        }),
         headers: { 'Content-Type': 'application/json' }
       });
       
       if (!backendRes.ok) {
         const data = await backendRes.json();
-        const errorMsg = data.message || "Error al registrar suscripción";
-        const errorDetail = data.detail ? `\nDetalle: ${data.detail}` : "";
-        throw new Error(`${errorMsg}${errorDetail}`);
+        throw new Error(data.message || "Error al registrar suscripción");
       }
       
       setIsSubscribed(true);
-      console.log('Suscrito con éxito');
     } catch (err: any) {
       console.error('Error suscribiendo:', err);
       alert("Error al suscribirse: " + err.message);
@@ -106,6 +109,30 @@ export function PushSubscribe() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const handleSync = async () => {
+      if (!isSubscribed || !('serviceWorker' in navigator)) return;
+      
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      
+      if (sub) {
+        const paydayType = localStorage.getItem('feriadosarg_normalPaydayType') || 'fifth';
+        await fetch('/api/subscribe', {
+          method: 'POST',
+          body: JSON.stringify({
+            subscription: sub,
+            preferences: { paydayType }
+          }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    };
+
+    window.addEventListener('sync-payday-preferences', handleSync);
+    return () => window.removeEventListener('sync-payday-preferences', handleSync);
+  }, [isSubscribed]);
 
   const unsubscribeUser = async () => {
     if (!('serviceWorker' in navigator)) return;

@@ -23,15 +23,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const subscription = req.body;
+    const { subscription, preferences } = req.body;
     
     if (!subscription || !subscription.endpoint) {
       return res.status(400).json({ message: 'Suscripción inválida' });
     }
 
-    // Save the subscription to Redis using the endpoint as unique key
+    // Save the subscription and preferences to Redis
+    const dataToSave = {
+      subscription,
+      preferences: preferences || { paydayType: 'fifth' } // Default to 5th business day
+    };
+
     try {
-      await redis.set(`sub:${subscription.endpoint}`, JSON.stringify(subscription));
+      await redis.set(`sub:${subscription.endpoint}`, JSON.stringify(dataToSave));
     } catch (redisError: any) {
       console.error('Error saving to Redis:', redisError);
       return res.status(500).json({ 
