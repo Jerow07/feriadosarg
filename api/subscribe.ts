@@ -23,7 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const { subscription, preferences } = req.body;
+    const { subscription, preferences, silent } = req.body;
     
     if (!subscription || !subscription.endpoint) {
       return res.status(400).json({ message: 'Suscripción inválida' });
@@ -51,11 +51,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: 'Te avisaremos el día antes de cada feriado y también el día previo a tu fecha de cobro. 💰'
     });
 
-    try {
-      await webpush.sendNotification(subscription, payload);
-    } catch (pushErr: any) {
-      console.error('Error sending welcome notification', pushErr);
-      // Not returning 500 here as sub is already in Redis
+    if (!silent) {
+      try {
+        await webpush.sendNotification(subscription, payload);
+      } catch (pushErr: any) {
+        console.error('Error sending welcome notification', pushErr);
+        // Not returning 500 here as sub is already in Redis
+      }
     }
 
     return res.status(200).json({ message: 'Suscripción exitosa' });

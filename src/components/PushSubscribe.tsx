@@ -123,7 +123,8 @@ export function PushSubscribe() {
           method: 'POST',
           body: JSON.stringify({
             subscription: sub,
-            preferences: { paydayType }
+            preferences: { paydayType },
+            silent: true
           }),
           headers: { 'Content-Type': 'application/json' }
         });

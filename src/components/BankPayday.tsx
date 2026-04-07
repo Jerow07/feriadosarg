@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { endOfMonth, isWeekend, subDays, addDays, isBefore, isSameDay, addMonths, startOfDay, startOfMonth } from 'date-fns';
 import { Landmark, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,13 @@ export function BankPayday({ holidays }: BankPaydayProps) {
     return (localStorage.getItem('feriadosarg_normalPaydayType') as PaydayType) || 'fifth';
   });
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     localStorage.setItem('feriadosarg_normalPaydayType', paydayType);
     window.dispatchEvent(new CustomEvent('sync-payday-preferences'));
   }, [paydayType]);
