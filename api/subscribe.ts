@@ -45,10 +45,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Send a welcome notification immediately as proof of work
+    // Send a welcome/update notification immediately
     const payload = JSON.stringify({
-      title: '¡Suscripción exitosa!',
-      body: 'Recibirás un aviso el día antes de cada feriado.'
+      title: '¡Suscripción activada!',
+      body: 'Te avisaremos el día antes de cada feriado y también el día previo a tu fecha de cobro. 💰'
     });
 
     try {
