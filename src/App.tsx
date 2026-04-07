@@ -42,7 +42,7 @@ function App() {
     // Show modal if it's the first time (no payday preference saved)
     const savedPayday = localStorage.getItem('feriadosarg_normalPaydayType')
     if (!savedPayday) {
-      setTimeout(() => setShowPaydayModal(true), 1500) // Small delay for effect
+      setShowPaydayModal(true)
     }
   }, [])
 

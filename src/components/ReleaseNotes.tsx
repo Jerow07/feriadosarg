@@ -10,8 +10,11 @@ export function ReleaseNotes() {
   useEffect(() => {
     // Verificar temporalidad para no molestar si ya lo vio
     const lastSeenVersion = localStorage.getItem('feriados_last_version');
+    const hasPaydaySelected = localStorage.getItem('feriadosarg_normalPaydayType');
     
-    if (lastSeenVersion !== CURRENT_VERSION) {
+    // Solo mostramos novedades si NO es la primera vez (ya tiene configurado su cobro)
+    // Esto evita que choque con el modal de bienvenida
+    if (hasPaydaySelected && lastSeenVersion !== CURRENT_VERSION) {
       // Damos un pequeño delay para que la app cargue primero
       const timer = setTimeout(() => {
         setShowNotes(true);
