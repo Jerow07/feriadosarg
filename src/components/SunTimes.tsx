@@ -59,32 +59,39 @@ export function SunTimes() {
 
       <div className="bg-white dark:bg-secondary rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none p-5 space-y-4">
         {/* Sunrise & Sunset times */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-              <Sunrise className="w-5 h-5 text-amber-500" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="p-1.5 sm:p-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl shrink-0">
+              <Sunrise className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">Amanecer</span>
-              <span className="text-lg font-bold text-gray-800 dark:text-gray-100 tabular-nums">{sun.sunrise}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium truncate">Amanecer</span>
+              <span className="text-sm sm:text-lg font-bold text-gray-800 dark:text-gray-100 tabular-nums">{sun.sunrise}</span>
             </div>
           </div>
 
-          <div className="flex flex-col items-center">
-            <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+          <div className="hidden sm:flex flex-col items-center">
+            <span className="text-xs text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap">
               {daylightHours}h {daylightMins}m de luz
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <div className="flex flex-col items-end">
-              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">Atardecer</span>
-              <span className="text-lg font-bold text-gray-800 dark:text-gray-100 tabular-nums">{sun.sunset}</span>
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="flex flex-col items-end min-w-0">
+              <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium truncate">Atardecer</span>
+              <span className="text-sm sm:text-lg font-bold text-gray-800 dark:text-gray-100 tabular-nums">{sun.sunset}</span>
             </div>
-            <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-xl">
-              <Sunset className="w-5 h-5 text-orange-500" />
+            <div className="p-1.5 sm:p-2 bg-orange-50 dark:bg-orange-900/20 rounded-xl shrink-0">
+              <Sunset className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
             </div>
           </div>
+        </div>
+
+        {/* Mobile daylight hours */}
+        <div className="sm:hidden flex justify-center pt-1 pb-1">
+          <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium px-2.5 py-1 bg-gray-50 dark:bg-white/5 rounded-full ring-1 ring-gray-100 dark:ring-white/5 shadow-sm">
+            {daylightHours}h {daylightMins}m de luz
+          </span>
         </div>
 
         {/* Sun progress bar */}
