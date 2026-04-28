@@ -5,6 +5,10 @@
       "schedule": "0 13 * * *"
     },
     {
+      "path": "/api/payday-push",
+      "schedule": "0 13 * * *"
+    },
+    {
       "path": "/api/monthly-bridges-push",
       "schedule": "0 13 1 * *"
     }
