@@ -38,9 +38,9 @@ export function PaydaySelectorModal({ onSelect, isOpen }: PaydaySelectorModalPro
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-lg bg-white dark:bg-secondary rounded-[32px] shadow-2xl overflow-hidden border border-gray-100 dark:border-white/10"
+          className="relative w-full max-w-lg bg-white dark:bg-secondary rounded-[32px] shadow-2xl border border-gray-100 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]"
         >
-          <div className="p-8 md:p-10 flex flex-col items-center text-center">
+          <div className="p-8 md:p-10 flex flex-col items-center text-center overflow-y-auto custom-scrollbar">
             <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center mb-6">
               <Star className="w-8 h-8 text-yellow-600 dark:text-accent fill-accent/20" />
             </div>

@@ -30,4 +30,7 @@ export const redis = {
   del: (key: string) => getRedis().del(key),
   scan: (cursor: string, ...args: any[]) => getRedis().scan(cursor, ...args),
   mget: (...keys: string[]) => getRedis().mget(...keys),
+  incr: (key: string) => getRedis().incr(key),
+  sadd: (key: string, ...members: string[]) => getRedis().sadd(key, ...members),
+  scard: (key: string): Promise<number> => getRedis().scard(key),
 };

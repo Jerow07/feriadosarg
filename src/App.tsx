@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useHolidays } from './hooks/useHolidays'
 import { Countdown } from './components/Countdown'
 import { UpcomingHolidays } from './components/UpcomingHolidays'
@@ -14,12 +14,16 @@ import { MoonPhase } from './components/MoonPhase'
 import { LongWeekend } from './components/LongWeekend'
 import { YearProgress } from './components/YearProgress'
 import { PaydaySelectorModal } from './components/PaydaySelectorModal'
+import { AdminPanel } from './components/AdminPanel'
 import { Loader2, Sun, Moon } from 'lucide-react'
 
 function App() {
   const { holidays, nextHoliday, upcomingHolidays, loading, error } = useHolidays()
   const [showPaydayModal, setShowPaydayModal] = useState(false)
-  
+  const [showAdmin, setShowAdmin] = useState(false)
+  const versionClickCount = useRef(0)
+  const versionClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme')
@@ -46,6 +50,30 @@ function App() {
     }
   }, [])
 
+  // PWA badge: show days remaining on app icon
+  useEffect(() => {
+    if (!loading && nextHoliday && 'setAppBadge' in navigator) {
+      navigator.setAppBadge(nextHoliday.daysRemaining).catch(() => {})
+    }
+    return () => {
+      if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {})
+    }
+  }, [loading, nextHoliday])
+
+  // Analytics: send pageview once on load
+  useEffect(() => {
+    let uid = localStorage.getItem('feriadosarg_uid')
+    if (!uid) {
+      uid = crypto.randomUUID()
+      localStorage.setItem('feriadosarg_uid', uid)
+    }
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'pageview', userId: uid }),
+    }).catch(() => {})
+  }, [])
+
   const handlePaydaySelect = (type: string) => {
     localStorage.setItem('feriadosarg_normalPaydayType', type)
     setShowPaydayModal(false)
@@ -61,15 +89,30 @@ function App() {
       <PushSubscribe />
       <InstallPWA />
       
-      <PaydaySelectorModal 
-        isOpen={showPaydayModal} 
-        onSelect={handlePaydaySelect} 
+      <PaydaySelectorModal
+        isOpen={showPaydayModal}
+        onSelect={handlePaydaySelect}
       />
 
-      <div className="fixed bottom-4 left-4 z-50 pointer-events-none">
-        <span className="px-2 py-0.5 bg-white/80 dark:bg-secondary/80 backdrop-blur-sm text-[10px] font-bold text-gray-400 dark:text-gray-500 rounded-md border border-gray-200 dark:border-white/10 tracking-wider shadow-sm transition-opacity duration-300">
-          V3.4.0
-        </span>
+      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
+
+      <div className="fixed bottom-4 left-4 z-50">
+        <button
+          onClick={() => {
+            versionClickCount.current += 1
+            if (versionClickTimer.current) clearTimeout(versionClickTimer.current)
+            if (versionClickCount.current >= 5) {
+              versionClickCount.current = 0
+              setShowAdmin(true)
+            } else {
+              versionClickTimer.current = setTimeout(() => { versionClickCount.current = 0 }, 3000)
+            }
+          }}
+          className="px-2 py-0.5 bg-white/80 dark:bg-secondary/80 backdrop-blur-sm text-[10px] font-bold text-gray-400 dark:text-gray-500 rounded-md border border-gray-200 dark:border-white/10 tracking-wider shadow-sm transition-opacity duration-300 cursor-default select-none"
+          aria-label="Versión"
+        >
+          V3.5.0
+        </button>
       </div>
 
       <div className="absolute top-4 right-4 flex items-center gap-3 z-50">

@@ -37,23 +37,36 @@ export function TodayEvents({ holidays }: TodayEventsProps) {
         if (!res.ok) throw new Error('API Error');
         const data = await res.json();
         
-        let mixedEvents: WikiEvent[] = [];
-        
-        if (data.holidays && data.holidays.length > 0) {
-           mixedEvents = [...data.holidays];
-        }
-        
-        if (data.events && data.events.length > 0) {
-           mixedEvents = [...mixedEvents, ...data.events];
+        // Combine holidays and events
+        const allItems = [
+          ...(data.holidays || []),
+          ...(data.events || [])
+        ];
+
+        // 1. De-duplicate by text
+        const uniqueItems: WikiEvent[] = [];
+        const seenTexts = new Set<string>();
+
+        // Also get today's holiday name to exclude it
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const argentineHolidayName = holidays?.find(h => h.fecha === todayStr)?.nombre?.toLowerCase();
+
+        for (const item of allItems) {
+          const lowerText = item.text.toLowerCase();
+          // Exclude if seen OR if it's the same as the main holiday
+          if (!seenTexts.has(lowerText) && (!argentineHolidayName || !lowerText.includes(argentineHolidayName))) {
+            seenTexts.add(lowerText);
+            uniqueItems.push(item);
+          }
         }
 
-        if (mixedEvents.length > 0) {
-          const topHolidays = data.holidays ? data.holidays.slice(0, 2) : [];
-          const randomEvents = data.events ? data.events.sort(() => 0.5 - Math.random()).slice(0, 3) : [];
-          
-          let finalSelection = [...topHolidays, ...randomEvents].slice(0, 3);
-          setEvents(finalSelection);
-        }
+        // 2. Select a fresh mix of exactly 3 events
+        const finalSelection = uniqueItems
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3)
+          .sort((a, b) => (b.year || 0) - (a.year || 0)); // Chronological order (newest first)
+
+        setEvents(finalSelection);
       } catch (err) {
         console.error("Failed to fetch events", err);
       } finally {
@@ -62,7 +75,7 @@ export function TodayEvents({ holidays }: TodayEventsProps) {
     };
     
     fetchEvents();
-  }, []);
+  }, [holidays]);
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -74,17 +87,19 @@ export function TodayEvents({ holidays }: TodayEventsProps) {
         <BookOpenText className="w-4 h-4 mr-2" />
         Hoy en la historia
       </h4>
-      <div className="flex flex-col p-6 bg-white dark:bg-secondary rounded-2xl border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors shadow-sm dark:shadow-none h-[calc(100%-2.5rem)] min-h-[180px]">
-        <div className="text-center mb-5 pb-4 border-b border-gray-100 dark:border-white/5 shrink-0">
-          <span className="text-6xl md:text-7xl font-display font-black text-gray-800 dark:text-gray-100 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 px-2 pb-2 block">
+      <div className="flex flex-col p-5 bg-white dark:bg-secondary rounded-2xl border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-secondary/80 transition-colors shadow-sm dark:shadow-none h-[400px] overflow-hidden">
+        <div className="text-center mb-4 pb-3 border-b border-gray-100 dark:border-white/5 shrink-0">
+          <span className="text-5xl md:text-6xl font-display font-black text-gray-800 dark:text-gray-100 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-gray-900 to-gray-500 dark:from-white dark:to-white/50 px-2 leading-none block">
             {today.getDate()}
           </span>
-          <span className="text-md font-medium text-gray-500 capitalize mt-[-8px] block">
-            {new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(today)}
-          </span>
-          <span className="text-xs font-medium text-gray-400 mt-1 block">
-            {new Intl.DateTimeFormat('es-AR', { weekday: 'long' }).format(today)}
-          </span>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <span className="text-sm font-bold text-gray-500 capitalize">
+              {new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(today)}
+            </span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-l border-gray-200 dark:border-white/10 pl-2">
+              {new Intl.DateTimeFormat('es-AR', { weekday: 'short' }).format(today)}
+            </span>
+          </div>
         </div>
         
         <div className="flex-1 flex flex-col justify-start relative overflow-hidden group">
@@ -121,27 +136,32 @@ export function TodayEvents({ holidays }: TodayEventsProps) {
                   className="relative h-full"
                   onMouseEnter={() => controls.stop()}
                   onMouseLeave={() => controls.start({
-                    y: [null, -100 * events.length],
-                    transition: { duration: 20 + events.length * 5, repeat: Infinity, ease: "linear", repeatType: "loop" }
+                    y: ["-25%", 0],
+                    transition: { duration: 15 + events.length * 8, repeat: Infinity, ease: "linear", repeatType: "loop" }
                   })}
                 >
                   <motion.div 
                     className="flex flex-col space-y-4"
                     animate={controls}
-                    initial={{ y: 0 }}
+                    initial={{ y: "-25%" }}
                     onViewportEnter={() => {
                       controls.start({
-                        y: [0, -100 * events.length],
-                        transition: { duration: 20 + events.length * 5, repeat: Infinity, ease: "linear", repeatType: "loop" }
+                        y: ["-25%", 0],
+                        transition: { 
+                          duration: 15 + events.length * 8, 
+                          repeat: Infinity, 
+                          ease: "linear", 
+                          repeatType: "loop" 
+                        }
                       });
                     }}
                   >
-                    {[...events, ...events].map((ev, i) => {
+                    {[...events, ...events, ...events, ...events].map((ev, i) => {
                       const isExpanded = expandedEvents[i % events.length];
                       const isLongText = ev.text.length > 120;
 
                       return (
-                        <div key={i} className="text-left text-sm leading-relaxed border-b border-gray-50 dark:border-white/5 pb-3 last:border-0 last:pb-0 shrink-0">
+                        <div key={`${ev.year}-${i}`} className="text-left text-sm leading-relaxed border-b border-gray-50 dark:border-white/5 pb-3 last:border-0 last:pb-0 shrink-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               {ev.year && <span className="font-bold text-yellow-600 dark:text-accent mr-2">{ev.year}:</span>}

@@ -1,9 +1,16 @@
 import { useWeather } from '../hooks/useWeather';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { getWeatherIcon } from '../utils/weatherUtils';
 
+const DEFAULT_LAT = -34.6118;
+const DEFAULT_LON = -58.4173;
+
 export function WeatherWidget() {
-  const { weather, loading } = useWeather();
+  const { weather, loading, coords, refreshLocation } = useWeather();
+
+  const isDefaultLocation =
+    !coords ||
+    (Math.abs(coords.lat - DEFAULT_LAT) < 0.01 && Math.abs(coords.lon - DEFAULT_LON) < 0.01);
 
   if (loading) return (
     <div className="flex items-center gap-2 px-3 py-1.5 bg-white/50 dark:bg-secondary/30 backdrop-blur-md rounded-full border border-gray-200 dark:border-white/5 animate-pulse">
@@ -23,6 +30,17 @@ export function WeatherWidget() {
       <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
         HOY
       </span>
+      <button
+        onClick={refreshLocation}
+        title={isDefaultLocation ? 'Usar mi ubicación' : 'Actualizar ubicación'}
+        className={`ml-0.5 rounded-full p-0.5 transition-colors cursor-pointer ${
+          isDefaultLocation
+            ? 'text-gray-300 dark:text-gray-600 hover:text-yellow-500 dark:hover:text-accent'
+            : 'text-yellow-500 dark:text-accent hover:text-yellow-600 dark:hover:text-yellow-300'
+        }`}
+      >
+        <MapPin size={11} />
+      </button>
     </div>
   );
 }

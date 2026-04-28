@@ -15,7 +15,7 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [canShare, setCanShare] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const { weather: currentWeather } = useWeather();
+  const { weather: currentWeather, coords } = useWeather();
   const [holidayWeather, setHolidayWeather] = useState<{ min: number; max: number; code: number } | null>(null);
   
   const isToday = nextHoliday.daysRemaining === 0;
@@ -23,13 +23,15 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
   useEffect(() => {
     setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
 
-    if (nextHoliday.daysRemaining <= 10 && nextHoliday.daysRemaining >= 0) {
+    if (nextHoliday.daysRemaining <= 14 && nextHoliday.daysRemaining >= 0) {
       const yyyy = nextHoliday.date.getFullYear();
       const mm = String(nextHoliday.date.getMonth() + 1).padStart(2, '0');
       const dd = String(nextHoliday.date.getDate()).padStart(2, '0');
       const dateStr = `${yyyy}-${mm}-${dd}`;
-      
-      fetch(`https://api.open-meteo.com/v1/forecast?latitude=-34.6118&longitude=-58.4173&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&start_date=${dateStr}&end_date=${dateStr}`)
+      const lat = coords?.lat ?? -34.6118;
+      const lon = coords?.lon ?? -58.4173;
+
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires&start_date=${dateStr}&end_date=${dateStr}`)
         .then(res => res.json())
         .then(data => {
           if (data.daily && typeof data.daily.weathercode[0] === 'number') {
@@ -44,7 +46,7 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
     } else {
       setHolidayWeather(null);
     }
-  }, [nextHoliday.date, nextHoliday.daysRemaining]);
+  }, [nextHoliday.date, nextHoliday.daysRemaining, coords]);
 
   // Live countdown timer — works 100% offline
   useEffect(() => {
@@ -197,12 +199,16 @@ export function Countdown({ nextHoliday, holidays }: CountdownProps) {
             <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/5">
               {nextHoliday.tipo === 'inamovible' ? 'Inamovible 📌' : nextHoliday.tipo === 'trasladable' ? 'Trasladable 🔄' : nextHoliday.tipo === 'puente' ? 'Puente Turístico 🌉' : nextHoliday.tipo}
             </span>
-            {holidayWeather && (
+            {holidayWeather ? (
               <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full border border-blue-100 dark:border-blue-800/50 text-xs font-medium" title="Pronóstico para el feriado">
                 {getWeatherIcon(holidayWeather.code)}
                 <span>{holidayWeather.min}° a {holidayWeather.max}°</span>
               </div>
-            )}
+            ) : nextHoliday.daysRemaining > 14 ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-500 rounded-full border border-gray-100 dark:border-white/5 text-[10px] font-medium" title="El pronóstico estarás disponible 2 semanas antes">
+                 <span>🌤️ Pronóstico en {nextHoliday.daysRemaining - 14} {nextHoliday.daysRemaining - 14 === 1 ? 'día' : 'días'}</span>
+              </div>
+            ) : null}
           </div>
  
           {holidayWeather && (
