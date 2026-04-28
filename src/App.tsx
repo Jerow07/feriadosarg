@@ -51,16 +51,6 @@ function App() {
     }
   }, [])
 
-  // PWA badge: show days remaining on app icon
-  useEffect(() => {
-    if (!loading && nextHoliday && 'setAppBadge' in navigator) {
-      navigator.setAppBadge(nextHoliday.daysRemaining).catch(() => {})
-    }
-    return () => {
-      if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {})
-    }
-  }, [loading, nextHoliday])
-
   // Analytics: send pageview once on load
   useEffect(() => {
     let uid = localStorage.getItem('feriadosarg_uid')
