@@ -51,6 +51,11 @@ function App() {
     }
   }, [])
 
+  // Clear any leftover PWA badge
+  useEffect(() => {
+    if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {})
+  }, [])
+
   // Analytics: send pageview once on load
   useEffect(() => {
     let uid = localStorage.getItem('feriadosarg_uid')
