@@ -15,6 +15,7 @@ import { LongWeekend } from './components/LongWeekend'
 import { YearProgress } from './components/YearProgress'
 import { PaydaySelectorModal } from './components/PaydaySelectorModal'
 import { AdminPanel } from './components/AdminPanel'
+import { WeatherBackground } from './components/WeatherBackground'
 import { Loader2, Sun, Moon } from 'lucide-react'
 
 function App() {
@@ -189,11 +190,7 @@ function App() {
         </button>
       </footer>
       
-      {/* Background gradients for aesthetics */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-accent/10 dark:bg-accent/5 blur-[120px] rounded-full transition-opacity duration-300" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-accent/10 dark:bg-accent/5 blur-[120px] rounded-full transition-opacity duration-300" />
-      </div>
+      <WeatherBackground />
     </main>
   )
 }

@@ -6,9 +6,12 @@
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Outfit', system-ui, sans-serif;
-  --color-primary: #171717;     /* near black for dark mode base */
-  --color-secondary: #262626;   /* slightly lighter */
-  --color-accent: #facc15;      /* yellow accent, like a glowing sun */
+  --color-primary: #171717;
+  --color-secondary: #262626;
+  --color-accent: #facc15;
+
+  --animate-sun-glow: sun-glow 3s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 3s ease-in-out infinite;
 }
 
 @layer base {
@@ -16,6 +19,37 @@
     @apply antialiased bg-gray-50 text-gray-900 dark:bg-primary dark:text-gray-100;
   }
 }
+@keyframes rain-fall {
+  0%   { transform: rotate(14deg) translateY(-25px); opacity: 0; }
+  6%   { opacity: 1; }
+  94%  { opacity: 1; }
+  100% { transform: rotate(14deg) translateY(108vh); opacity: 0; }
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(100vw + 320px)); }
+}
+
+@keyframes snow-fall {
+  0%   { transform: translateY(-12px) translateX(0px);  opacity: 0; }
+  8%   { opacity: 0.85; }
+  38%  { transform: translateY(38vh)  translateX(18px); }
+  62%  { transform: translateY(62vh)  translateX(-18px); }
+  92%  { opacity: 0.85; }
+  100% { transform: translateY(106vh) translateX(4px);  opacity: 0; }
+}
+
+@keyframes sun-glow {
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1);    }
+  50%       { opacity: 0.85; transform: translateX(-50%) scale(1.12); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.6; }
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
