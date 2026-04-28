@@ -21,16 +21,16 @@ export function WeatherBackground() {
   const [flash, setFlash] = useState(false);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const rainCount = category === 'stormy' ? 65 : 40;
+  const rainCount = category === 'stormy' ? 70 : 45;
 
   const rainDrops = useMemo(
     () =>
       Array.from({ length: rainCount }, () => ({
         left: `${Math.random() * 115 - 5}%`,
         delay: `${(Math.random() * 2).toFixed(2)}s`,
-        duration: `${(0.3 + Math.random() * 0.5).toFixed(2)}s`,
-        opacity: +(0.2 + Math.random() * 0.45).toFixed(2),
-        height: `${10 + Math.floor(Math.random() * 12)}px`,
+        duration: `${(0.3 + Math.random() * 0.45).toFixed(2)}s`,
+        opacity: +(0.4 + Math.random() * 0.4).toFixed(2),
+        height: `${14 + Math.floor(Math.random() * 14)}px`,
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rainCount]
@@ -42,20 +42,24 @@ export function WeatherBackground() {
         left: `${Math.random() * 100}%`,
         delay: `${(Math.random() * 5).toFixed(2)}s`,
         duration: `${(4 + Math.random() * 5).toFixed(2)}s`,
-        size: `${3 + Math.floor(Math.random() * 4)}px`,
+        size: `${4 + Math.floor(Math.random() * 5)}px`,
       })),
     []
   );
 
+  // Each cloud is 2 overlapping blobs to look more natural
   const clouds = useMemo(
     () =>
       Array.from({ length: 5 }, (_, i) => ({
-        top: `${3 + i * 9 + Math.random() * 4}%`,
-        duration: `${22 + i * 7 + Math.floor(Math.random() * 8)}s`,
-        delay: `${(-i * 4 - Math.random() * 6).toFixed(1)}s`,
-        width: `${180 + Math.floor(Math.random() * 220)}px`,
-        height: `${60 + Math.floor(Math.random() * 60)}px`,
-        opacity: +(0.12 + Math.random() * 0.18).toFixed(2),
+        top: `${4 + i * 10 + Math.random() * 5}%`,
+        duration: `${24 + i * 6 + Math.floor(Math.random() * 8)}s`,
+        delay: `${(-i * 5 - Math.random() * 8).toFixed(1)}s`,
+        w1: `${260 + Math.floor(Math.random() * 180)}px`,
+        h1: `${90 + Math.floor(Math.random() * 60)}px`,
+        w2: `${160 + Math.floor(Math.random() * 100)}px`,
+        h2: `${70 + Math.floor(Math.random() * 40)}px`,
+        offsetX: `${40 + Math.floor(Math.random() * 80)}px`,
+        offsetY: `-${20 + Math.floor(Math.random() * 20)}px`,
       })),
     []
   );
@@ -67,16 +71,15 @@ export function WeatherBackground() {
         setFlash(true);
         setTimeout(() => {
           setFlash(false);
-          // double flash sometimes
           if (Math.random() > 0.5) {
             setTimeout(() => {
               setFlash(true);
               setTimeout(() => setFlash(false), 80);
-            }, 120);
+            }, 130);
           }
-        }, 100);
+        }, 110);
         schedule();
-      }, 3500 + Math.random() * 6500);
+      }, 3000 + Math.random() * 7000);
     };
     schedule();
     return () => clearTimeout(flashTimer.current);
@@ -88,73 +91,83 @@ export function WeatherBackground() {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
 
-      {/* ---- Gradient blobs — change color by weather ---- */}
+      {/* Sky tint overlay */}
+      {category === 'sunny' && isDay && (
+        <div className="absolute inset-0 bg-yellow-50/25 dark:bg-transparent" />
+      )}
+      {category === 'cloudy' && (
+        <div className="absolute inset-0 bg-slate-200/30 dark:bg-slate-800/20" />
+      )}
+      {isRainy && (
+        <div className="absolute inset-0 bg-slate-400/15 dark:bg-blue-950/30" />
+      )}
+
+      {/* ---- Gradient blobs ---- */}
       {category === 'sunny' && (
         <>
-          <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[420px] h-[420px] rounded-full blur-[100px] bg-yellow-300/30 dark:bg-yellow-400/15 animate-sun-glow" />
-          <div className="absolute top-[-20%] left-[-10%] w-[45%] h-[45%] rounded-full blur-[120px] bg-yellow-200/20 dark:bg-yellow-500/8" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[45%] h-[45%] rounded-full blur-[120px] bg-orange-200/20 dark:bg-yellow-600/8" />
-          {/* Sun rays */}
-          {isDay && (
-            <div className="absolute top-[-80px] left-1/2 -translate-x-1/2 w-[180px] h-[180px] rounded-full bg-yellow-300/20 dark:bg-yellow-400/10 blur-[30px] animate-sun-glow" />
-          )}
+          <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[480px] h-[480px] rounded-full blur-[90px] bg-yellow-300/40 dark:bg-yellow-400/20 animate-sun-glow" />
+          <div className="absolute top-[-25%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[130px] bg-yellow-200/30 dark:bg-yellow-500/10" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[45%] h-[45%] rounded-full blur-[130px] bg-orange-200/25 dark:bg-yellow-600/10" />
         </>
       )}
-
       {category === 'cloudy' && (
         <>
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-slate-300/20 dark:bg-slate-600/10" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-slate-200/15 dark:bg-slate-700/8" />
+          <div className="absolute top-[-20%] left-[-10%] w-[55%] h-[55%] rounded-full blur-[130px] bg-slate-400/25 dark:bg-slate-600/15" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[130px] bg-slate-300/20 dark:bg-slate-700/12" />
         </>
       )}
-
       {isRainy && (
         <>
-          <div className="absolute inset-0 bg-blue-950/5 dark:bg-blue-950/20" />
-          <div className="absolute top-[-20%] left-[-10%] w-[55%] h-[55%] rounded-full blur-[120px] bg-blue-400/10 dark:bg-blue-900/20" />
-          <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full blur-[120px] bg-indigo-400/8 dark:bg-indigo-900/15" />
+          <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[130px] bg-slate-500/25 dark:bg-blue-900/30" />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[45%] h-[45%] rounded-full blur-[130px] bg-slate-400/20 dark:bg-indigo-900/20" />
         </>
       )}
-
       {category === 'snowy' && (
         <>
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-blue-100/25 dark:bg-sky-300/6" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-slate-100/20 dark:bg-slate-400/5" />
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[130px] bg-sky-200/30 dark:bg-sky-300/8" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[130px] bg-slate-200/25 dark:bg-slate-400/6" />
         </>
       )}
-
       {category === 'default' && (
         <>
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-accent/10 dark:bg-accent/5 transition-opacity duration-300" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-accent/10 dark:bg-accent/5 transition-opacity duration-300" />
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-accent/10 dark:bg-accent/5" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-accent/10 dark:bg-accent/5" />
         </>
       )}
 
-      {/* ---- Drifting clouds ---- */}
+      {/* ---- Clouds (2-blob layered shape per cloud) ---- */}
       {showClouds && clouds.map((c, i) => (
         <div
           key={i}
-          className="absolute rounded-full bg-white dark:bg-white/5 blur-[35px]"
+          className="absolute"
           style={{
             top: c.top,
-            left: '-300px',
-            width: c.width,
-            height: c.height,
-            opacity: c.opacity,
+            left: '-350px',
             animation: `cloud-drift ${c.duration} ${c.delay} linear infinite`,
           }}
-        />
+        >
+          {/* main body */}
+          <div
+            className="absolute rounded-full bg-slate-300 dark:bg-slate-200 blur-[18px]"
+            style={{ width: c.w1, height: c.h1, opacity: 0.55 }}
+          />
+          {/* top bump */}
+          <div
+            className="absolute rounded-full bg-slate-200 dark:bg-white blur-[14px]"
+            style={{ width: c.w2, height: c.h2, opacity: 0.45, left: c.offsetX, top: c.offsetY }}
+          />
+        </div>
       ))}
 
       {/* ---- Rain drops ---- */}
       {isRainy && rainDrops.map((d, i) => (
         <div
           key={i}
-          className="absolute rounded-full bg-blue-300 dark:bg-blue-200"
+          className="absolute rounded-full bg-slate-400 dark:bg-slate-300"
           style={{
             left: d.left,
             top: '-25px',
-            width: '1.5px',
+            width: '2px',
             height: d.height,
             opacity: d.opacity,
             animation: `rain-fall ${d.duration} ${d.delay} linear infinite`,
@@ -165,14 +178,14 @@ export function WeatherBackground() {
 
       {/* ---- Lightning flash ---- */}
       {flash && (
-        <div className="absolute inset-0 bg-white/25 dark:bg-white/12" />
+        <div className="absolute inset-0 bg-white/30 dark:bg-white/15" />
       )}
 
       {/* ---- Snowflakes ---- */}
       {category === 'snowy' && snowFlakes.map((f, i) => (
         <div
           key={i}
-          className="absolute rounded-full bg-white/80 dark:bg-white/60"
+          className="absolute rounded-full bg-white dark:bg-white/80 shadow-sm"
           style={{
             left: f.left,
             top: '-12px',
