@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-// Version: 1.1.0 - Push Notifications Fix
+// Version: 1.2.0 - Clear badge on push
 import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
@@ -15,7 +15,11 @@ self.addEventListener('install', () => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    self.clients.claim().then(() => {
+      if ('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(() => {});
+    })
+  );
 });
 
 // Cache external fonts or static assets
@@ -53,7 +57,11 @@ self.addEventListener('push', (event) => {
         primaryKey: '2'
       }
     };
-    event.waitUntil(self.registration.showNotification(data.title, options));
+    event.waitUntil(
+      self.registration.showNotification(data.title, options).then(() => {
+        if ('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(() => {});
+      })
+    );
   }
 });
 
