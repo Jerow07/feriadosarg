@@ -51,9 +51,16 @@ function App() {
     }
   }, [])
 
-  // Clear any leftover PWA badge
+  // Clear badge and close pending notifications when app is opened
   useEffect(() => {
     if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {})
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.getNotifications().then(notifications => {
+          notifications.forEach(n => n.close())
+        })
+      }).catch(() => {})
+    }
   }, [])
 
   // Analytics: send pageview once on load
