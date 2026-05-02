@@ -133,7 +133,7 @@ export function TodayEvents({ holidays }: TodayEventsProps) {
                  </div>
               ) : events.length > 0 ? (
                 <div 
-                  className="relative h-full"
+                  className="relative h-full overflow-hidden"
                   onMouseEnter={() => controls.stop()}
                   onMouseLeave={() => controls.start({
                     y: ["-25%", 0],
